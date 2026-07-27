@@ -54,6 +54,8 @@ export interface EventOutcomePreviewChoice {
   text: string;
   requiresSpell?: boolean;
   spellId?: string;
+  requiresMinigame?: boolean;
+  minigameId?: "quidditch" | "gobstones";
 }
 
 export interface GameEvent {
@@ -79,6 +81,7 @@ export interface Club {
   icon: string;
   weeklyCost: number;
   statFocus: string[];
+  minYear?: number;
 }
 
 export interface Pet {

@@ -8,6 +8,7 @@ export const clubs: Club[] = [
     icon: "🧹",
     weeklyCost: 0,
     statFocus: ["courage", "charm"],
+    minYear: 2,
   },
   {
     id: "gobstones",

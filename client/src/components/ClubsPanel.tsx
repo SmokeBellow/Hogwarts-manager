@@ -18,21 +18,34 @@ export function ClubsPanel({
   return (
     <div className="panel">
       <h2>Внеклассные занятия</h2>
-      <p className="text-muted">Клубы отнимают немного денег каждую неделю, но развивают твои черты характера.</p>
+      <p className="text-muted">
+        Записаться можно на ярмарке кружков в начале года — здесь же можно вступить или выйти из клуба в любой
+        момент.
+      </p>
       <div className="card-grid" style={{ marginTop: 12 }}>
         {clubs.map((club) => {
           const joined = character.clubs.includes(club.id);
+          const locked = (club.minYear ?? 1) > character.year;
           return (
-            <div className="item-card" key={club.id}>
+            <div className="item-card" key={club.id} style={locked ? { opacity: 0.55 } : undefined}>
               <span className="avatar-placeholder">{club.icon}</span>
               <strong className="display" style={{ color: "var(--gold-bright)" }}>
                 {club.name}
               </strong>
               <span>{club.description}</span>
-              <span className="pill">{club.weeklyCost > 0 ? `${club.weeklyCost} гал./неделю` : "Бесплатно"}</span>
-              <button className={joined ? "btn btn-danger" : "btn btn-primary"} onClick={() => toggle(club.id, joined)}>
-                {joined ? "Покинуть клуб" : "Вступить"}
-              </button>
+              {locked ? (
+                <span className="pill">🔒 Доступно с {club.minYear} курса</span>
+              ) : (
+                <>
+                  <span className="pill">{club.weeklyCost > 0 ? `${club.weeklyCost} гал./неделю` : "Бесплатно"}</span>
+                  <button
+                    className={joined ? "btn btn-danger" : "btn btn-primary"}
+                    onClick={() => toggle(club.id, joined)}
+                  >
+                    {joined ? "Покинуть клуб" : "Вступить"}
+                  </button>
+                </>
+              )}
             </div>
           );
         })}

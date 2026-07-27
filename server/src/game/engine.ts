@@ -83,7 +83,7 @@ export function createCharacter(userId: number, name: string, backstoryId: strin
   }
 
   const grades: Record<string, number> = {};
-  for (const s of subjects) grades[s.id] = 50;
+  for (const s of subjects) grades[s.id] = 0;
 
   const info = db
     .prepare(
@@ -134,10 +134,27 @@ export function getCurrentEvent(characterId: number) {
   const character = getCharacterById(characterId);
   if (!character) throw new Error("Персонаж не найден");
   const seen: string[] = JSON.parse(character.seen_events);
-  const candidate = events.find(
-    (e) => e.weekMin <= character.week && character.week <= e.weekMax && !seen.includes(e.id)
+  const memberClubs: string[] = JSON.parse(character.clubs);
+
+  const matching = events.filter(
+    (e) =>
+      e.weekMin <= character.week &&
+      character.week <= e.weekMax &&
+      !seen.includes(e.id) &&
+      character.year >= (e.minYear ?? 1) &&
+      (!e.requiresClub || memberClubs.includes(e.requiresClub))
   );
-  if (!candidate) return null;
+  if (matching.length === 0) return null;
+
+  // Guaranteed events (e.g. the clubs fair, a match the player signed up for)
+  // must win over overlapping optional events for the same week, otherwise
+  // their narrow week window can close before they're ever picked.
+  matching.sort((a, b) => {
+    if (!!a.guaranteed !== !!b.guaranteed) return a.guaranteed ? -1 : 1;
+    return a.weekMin - b.weekMin;
+  });
+  const candidate = matching[0];
+
   return {
     id: candidate.id,
     title: candidate.title,
@@ -148,6 +165,8 @@ export function getCurrentEvent(characterId: number) {
       text: c.text,
       requiresSpell: c.requiresSpell,
       spellId: c.spellId,
+      requiresMinigame: c.requiresMinigame,
+      minigameId: c.minigameId,
     })),
   };
 }
@@ -196,7 +215,7 @@ export function advanceWeek(characterId: number) {
 }
 
 interface ResolveOptions {
-  spellSuccess?: boolean;
+  challengeSuccess?: boolean;
 }
 
 export function resolveEventChoice(
@@ -218,8 +237,8 @@ export function resolveEventChoice(
   if (choice.statKey) {
     effQuality += (stats[choice.statKey] / 100 - 0.5) * 0.3;
   }
-  if (choice.requiresSpell) {
-    effQuality += options.spellSuccess ? 0.25 : -0.2;
+  if (choice.requiresSpell || choice.requiresMinigame) {
+    effQuality += options.challengeSuccess ? 0.25 : -0.2;
   }
   effQuality = clamp(effQuality, 0, 1);
 
@@ -235,6 +254,7 @@ export function resolveEventChoice(
     : null;
   let money = character.money;
   let housePoints = character.house_points;
+  const memberClubs: string[] = JSON.parse(character.clubs);
 
   const scale = (v: number) => (isBad ? Math.round(v * softenFactor) : v);
 
@@ -246,7 +266,7 @@ export function resolveEventChoice(
   }
   if (outcome.gradeDelta) {
     const { subject, amount } = outcome.gradeDelta;
-    grades[subject] = clamp((grades[subject] ?? 50) + scale(amount), 0, 100);
+    grades[subject] = clamp((grades[subject] ?? 0) + scale(amount), 0, 100);
   }
   if (outcome.friendDelta) {
     const delta = scale(outcome.friendDelta);
@@ -263,13 +283,16 @@ export function resolveEventChoice(
     if (relationship.level <= -3) relationship = null;
   }
   if (outcome.housePointsDelta) housePoints += scale(outcome.housePointsDelta);
+  if (outcome.joinClub && !memberClubs.includes(outcome.joinClub)) {
+    memberClubs.push(outcome.joinClub);
+  }
   money = Math.max(0, money);
 
   const seen: string[] = JSON.parse(character.seen_events);
   seen.push(event.id);
 
   db.prepare(
-    `UPDATE characters SET money = ?, stats = ?, grades = ?, friends = ?, relationship = ?, house_points = ?, seen_events = ?, updated_at = datetime('now') WHERE id = ?`
+    `UPDATE characters SET money = ?, stats = ?, grades = ?, friends = ?, relationship = ?, house_points = ?, clubs = ?, seen_events = ?, updated_at = datetime('now') WHERE id = ?`
   ).run(
     money,
     JSON.stringify(stats),
@@ -277,6 +300,7 @@ export function resolveEventChoice(
     JSON.stringify(friends),
     relationship ? JSON.stringify(relationship) : null,
     housePoints,
+    JSON.stringify(memberClubs),
     JSON.stringify(seen),
     characterId
   );

@@ -100,7 +100,7 @@ gameRouter.get("/event/current", (req: AuthedRequest, res) => {
 const resolveSchema = z.object({
   eventId: z.string(),
   choiceId: z.string(),
-  spellSuccess: z.boolean().optional(),
+  challengeSuccess: z.boolean().optional(),
 });
 
 gameRouter.post("/event/resolve", (req: AuthedRequest, res) => {
@@ -110,7 +110,7 @@ gameRouter.post("/event/resolve", (req: AuthedRequest, res) => {
   if (!parsed.success) return res.status(400).json({ error: "Некорректные данные" });
   try {
     const result = resolveEventChoice(character.id, parsed.data.eventId, parsed.data.choiceId, {
-      spellSuccess: parsed.data.spellSuccess,
+      challengeSuccess: parsed.data.challengeSuccess,
     });
     res.json(result);
   } catch (e) {

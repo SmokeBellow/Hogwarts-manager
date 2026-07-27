@@ -107,7 +107,7 @@ export function GamePage({
         </div>
       )}
       {tab === "clubs" && <ClubsPanel character={character} clubs={clubs} onUpdated={onCharacterUpdate} />}
-      {tab === "pets" && <PetsPanel character={character} pets={pets} onUpdated={onCharacterUpdate} />}
+      {tab === "pets" && <PetsPanel character={character} pets={pets} />}
       {tab === "lectures" && <LecturesPanel topics={lectureTopics} subjects={subjects} />}
     </div>
   );

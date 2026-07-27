@@ -95,10 +95,11 @@ function App() {
         <>
           {topBar}
           <IntroPage
-            characterName={character.name}
+            character={character}
+            pets={staticData.pets}
             spellTemplates={staticData.spellTemplates}
             onDone={(char) => {
-              if (char) setCharacter(char);
+              setCharacter(char);
               sessionStorage.setItem(`hogwarts_intro_done_${character.id}`, "1");
               setIntroDone(true);
             }}

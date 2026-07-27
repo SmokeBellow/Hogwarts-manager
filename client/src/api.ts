@@ -44,10 +44,10 @@ export const api = {
       body: JSON.stringify({ answers }),
     }),
   getCurrentEvent: () => request<{ event: any | null }>("/game/event/current"),
-  resolveEvent: (eventId: string, choiceId: string, spellSuccess?: boolean) =>
+  resolveEvent: (eventId: string, choiceId: string, challengeSuccess?: boolean) =>
     request<{ isBad: boolean; outcomeText: string; character: any }>("/game/event/resolve", {
       method: "POST",
-      body: JSON.stringify({ eventId, choiceId, spellSuccess }),
+      body: JSON.stringify({ eventId, choiceId, challengeSuccess }),
     }),
   advanceWeek: () => request<{ character: any }>("/game/week/advance", { method: "POST" }),
   joinClub: (clubId: string) =>

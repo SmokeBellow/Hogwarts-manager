@@ -39,6 +39,7 @@ export interface EventOutcome {
   friendDelta?: number;
   relationshipDelta?: number;
   housePointsDelta?: number;
+  joinClub?: string;
 }
 
 export interface EventChoice {
@@ -50,6 +51,8 @@ export interface EventChoice {
   badOutcome: EventOutcome;
   requiresSpell?: boolean;
   spellId?: string;
+  requiresMinigame?: boolean;
+  minigameId?: "quidditch" | "gobstones";
 }
 
 export interface GameEvent {
@@ -60,6 +63,9 @@ export interface GameEvent {
   description: string;
   category: "academic" | "social" | "random" | "club" | "money";
   choices: EventChoice[];
+  minYear?: number; // event only appears from this school year onward, default 1
+  requiresClub?: string; // event only appears if the character has joined this club
+  guaranteed?: boolean; // wins over overlapping non-guaranteed events for the same week
 }
 
 export interface Club {
@@ -69,6 +75,7 @@ export interface Club {
   icon: string;
   weeklyCost: number;
   statFocus: StatKey[];
+  minYear?: number; // club can only be joined from this school year onward, default 1
 }
 
 export interface Pet {

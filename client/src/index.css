@@ -168,13 +168,27 @@ input::placeholder {
   color: #ff9d9d;
 }
 
-.top-bar {
+.identity-row {
   display: flex;
   align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.info-strip {
+  display: flex;
   justify-content: space-between;
-  margin-bottom: 24px;
   gap: 12px;
   flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.info-chip {
+  background: rgba(16, 11, 30, 0.4);
+  border: 1px solid var(--border-glow);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.95rem;
 }
 
 .house-Gryffindor {
@@ -249,12 +263,26 @@ input::placeholder {
 
 .subject-chip {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 6px;
   background: rgba(16, 11, 30, 0.4);
   border: 1px solid var(--border-glow);
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 10px 12px;
+}
+
+.subject-chip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.92rem;
+}
+
+.question-card {
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .event-panel {
@@ -363,6 +391,36 @@ input::placeholder {
   opacity: 0.7;
 }
 
+.timing-track {
+  position: relative;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(74, 47, 16, 0.15);
+  border: 1px solid rgba(74, 47, 16, 0.3);
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.timing-target {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(63, 143, 95, 0.45);
+  border-left: 1px solid rgba(63, 143, 95, 0.7);
+  border-right: 1px solid rgba(63, 143, 95, 0.7);
+}
+
+.timing-marker {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 5px;
+  margin-left: -2.5px;
+  background: #4a2f10;
+  border-radius: 3px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+}
+
 .spell-canvas {
   touch-action: none;
   border-radius: 10px;
@@ -404,14 +462,9 @@ input::placeholder {
     font-size: 1.2rem;
   }
 
-  .top-bar {
+  .info-strip {
     flex-direction: column;
-    align-items: flex-start;
     gap: 8px;
-  }
-
-  .top-bar > div:last-child {
-    text-align: left;
   }
 
   .stat-grid {
@@ -450,6 +503,10 @@ input::placeholder {
 
   .choice-btn {
     padding: 13px 14px;
+  }
+
+  .question-card {
+    min-height: 340px;
   }
 
   input,

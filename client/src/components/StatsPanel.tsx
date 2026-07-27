@@ -17,19 +17,22 @@ const GRADE_COLORS: Record<string, string> = {
   T: "#8f2f2f",
 };
 
+function gradeColor(value: number): string {
+  const hue = Math.max(0, Math.min(100, value)) * 1.2; // 0 = red, 100 = green
+  return `hsl(${hue}, 58%, 46%)`;
+}
+
 export function StatsPanel({ character, subjects }: { character: Character; subjects: Subject[] }) {
   return (
     <div className="panel">
-      <div className="top-bar">
-        <div>
-          <h2 style={{ margin: 0 }}>{character.name}</h2>
-          {character.house && <span className={`house-badge house-${character.house}`}>{character.house}</span>}
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <div>💰 {character.money} галлеонов</div>
-          <div className="text-muted">
-            Год {character.year} · Неделя {Math.min(character.week, character.totalWeeks)} из {character.totalWeeks}
-          </div>
+      <div className="identity-row">
+        <h2 style={{ margin: 0 }}>{character.name}</h2>
+        {character.house && <span className={`house-badge house-${character.house}`}>{character.house}</span>}
+      </div>
+      <div className="info-strip">
+        <div className="info-chip">💰 {character.money} галлеонов</div>
+        <div className="info-chip">
+          📅 Год {character.year} · Неделя {Math.min(character.week, character.totalWeeks)} из {character.totalWeeks}
         </div>
       </div>
 
@@ -48,15 +51,18 @@ export function StatsPanel({ character, subjects }: { character: Character; subj
       <h3>Оценки</h3>
       <div className="grades-grid">
         {subjects.map((s) => {
-          const grade = character.grades[s.id] ?? 50;
+          const grade = character.grades[s.id] ?? 0;
           return (
             <div className="subject-chip" key={s.id}>
-              <span>
-                {s.icon} {s.name}
-              </span>
-              <strong style={{ color: grade >= 70 ? "#8fd6a8" : grade >= 40 ? "#d6c98f" : "#d68f8f" }}>
-                {grade}
-              </strong>
+              <div className="subject-chip-head">
+                <span>
+                  {s.icon} {s.name}
+                </span>
+                <strong>{grade}</strong>
+              </div>
+              <div className="stat-bar-track">
+                <div className="stat-bar-fill" style={{ width: `${grade}%`, background: gradeColor(grade) }} />
+              </div>
             </div>
           );
         })}

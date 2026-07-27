@@ -1,20 +1,22 @@
 import { useEffect, useState } from "react";
-import type { GameEvent, SpellTemplate } from "../types";
+import type { Character, GameEvent, Pet, SpellTemplate } from "../types";
 import { api } from "../api";
 import { EventPanel } from "../components/EventPanel";
 
-type Step = "platform" | "express" | "arrival";
+type Step = "diagon" | "platform" | "express" | "arrival";
 
 interface Props {
-  characterName: string;
+  character: Character;
+  pets: Pet[];
   spellTemplates: SpellTemplate[];
-  onDone: (character: any) => void;
+  onDone: (character: Character) => void;
 }
 
-export function IntroPage({ characterName, spellTemplates, onDone }: Props) {
-  const [step, setStep] = useState<Step>("platform");
+export function IntroPage({ character: initialCharacter, pets, spellTemplates, onDone }: Props) {
+  const [step, setStep] = useState<Step>("diagon");
+  const [character, setCharacter] = useState(initialCharacter);
   const [event, setEvent] = useState<GameEvent | null>(null);
-  const [latestCharacter, setLatestCharacter] = useState<any>(null);
+  const [petError, setPetError] = useState<string | null>(null);
 
   useEffect(() => {
     if (step === "express" && !event) {
@@ -22,13 +24,67 @@ export function IntroPage({ characterName, spellTemplates, onDone }: Props) {
     }
   }, [step, event]);
 
+  const buyPet = async (petId: string) => {
+    setPetError(null);
+    try {
+      const res = await api.buyPet(petId);
+      setCharacter(res.character);
+    } catch (e) {
+      setPetError((e as Error).message);
+    }
+  };
+
+  if (step === "diagon") {
+    return (
+      <div className="app-shell">
+        <div className="parchment-card question-card">
+          <h1 style={{ marginTop: 0 }}>Косой переулок</h1>
+          <p>
+            Перед началом учебного года {character.name} заглядывает в Косой переулок за учебниками, мантией и
+            волшебной палочкой. У витрины «Волшебный зверинец» можно завести питомца — единственный шанс сделать
+            это перед отправлением в школу.
+          </p>
+          {character.pet ? (
+            <p>
+              Питомец уже выбран: <strong>{character.pet.name}</strong>.
+            </p>
+          ) : (
+            <>
+              {petError && <p className="error-text">{petError}</p>}
+              <div className="card-grid" style={{ marginTop: 12 }}>
+                {pets.map((pet) => (
+                  <div className="item-card" key={pet.id}>
+                    <span className="avatar-placeholder">{pet.icon}</span>
+                    <strong className="display" style={{ color: "var(--gold-bright)" }}>
+                      {pet.name}
+                    </strong>
+                    <span style={{ fontSize: "0.9rem" }}>{pet.description}</span>
+                    <span className="pill">
+                      {pet.cost} гал. · {pet.weeklyUpkeep > 0 ? `${pet.weeklyUpkeep} гал./нед.` : "без доплат"}
+                    </span>
+                    <button className="btn btn-primary" disabled={character.money < pet.cost} onClick={() => buyPet(pet.id)}>
+                      Купить
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          <button className="btn btn-primary" style={{ marginTop: 20 }} onClick={() => setStep("platform")}>
+            На вокзал Кингс-Кросс
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (step === "platform") {
     return (
       <div className="app-shell">
-        <div className="parchment-card">
+        <div className="parchment-card question-card">
           <h1 style={{ marginTop: 0 }}>Платформа 9¾</h1>
           <p>
-            {characterName} проходит сквозь незаметный барьер между платформами девять и десять — и оказывается
+            {character.name} проходит сквозь незаметный барьер между платформами девять и десять — и оказывается
             перед алым паровозом, окутанным паром. На перроне толпятся семьи волшебников, совы ухают в клетках,
             тележки со скрипом катятся к вагонам.
           </p>
@@ -44,13 +100,13 @@ export function IntroPage({ characterName, spellTemplates, onDone }: Props) {
   if (step === "express") {
     return (
       <div className="app-shell">
-        {!event && <div className="panel">Поезд отправляется...</div>}
+        {!event && <div className="panel question-card">Поезд отправляется...</div>}
         {event && (
           <EventPanel
             event={event}
             spellTemplates={spellTemplates}
-            onResolved={(character) => {
-              setLatestCharacter(character);
+            onResolved={(updated) => {
+              setCharacter(updated);
               setStep("arrival");
             }}
           />
@@ -61,7 +117,7 @@ export function IntroPage({ characterName, spellTemplates, onDone }: Props) {
 
   return (
     <div className="app-shell">
-      <div className="parchment-card">
+      <div className="parchment-card question-card">
         <h1 style={{ marginTop: 0 }}>Прибытие в Хогвартс</h1>
         <p>
           Поезд останавливается на маленькой станции Хогсмид. Великан-лесничий машет фонарём и зовёт первокурсников
@@ -69,7 +125,7 @@ export function IntroPage({ characterName, spellTemplates, onDone }: Props) {
           башни, шпили.
         </p>
         <p>У ворот Большого зала первокурсников уже ждёт Распределяющая шляпа.</p>
-        <button className="btn btn-primary" onClick={() => onDone(latestCharacter)}>
+        <button className="btn btn-primary" onClick={() => onDone(character)}>
           Войти в Большой зал
         </button>
       </div>
