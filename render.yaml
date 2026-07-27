@@ -3,10 +3,8 @@ services:
     name: hogwarts-manager
     runtime: node
     plan: free
-    buildCommand: npm install --prefix client && npm run build --prefix client && npm install --prefix server && npm run build --prefix server
+    buildCommand: npm install --include=dev --prefix client && npm run build --prefix client && npm install --include=dev --prefix server && npm run build --prefix server
     startCommand: npm run start --prefix server
     envVars:
       - key: JWT_SECRET
         generateValue: true
-      - key: NODE_ENV
-        value: production
