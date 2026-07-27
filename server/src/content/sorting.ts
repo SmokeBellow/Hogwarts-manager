@@ -23,12 +23,12 @@ export const sortingQuestions: SortingQuestion[] = [
   },
   {
     id: "q3",
-    prompt: "Распределяющая шляпа спрашивает: что для тебя важнее всего в трудную минуту?",
+    prompt: "До экзамена остался ровно час, а ты понимаешь, что не успеваешь повторить и половины материала. Что делаешь?",
     options: [
-      { id: "a", text: "Не отступать, что бы ни случилось", housePoints: { Gryffindor: 3 } },
-      { id: "b", text: "Найти самый разумный выход из ситуации", housePoints: { Ravenclaw: 3 } },
-      { id: "c", text: "Не бросать тех, кто рядом", housePoints: { Hufflepuff: 3 } },
-      { id: "d", text: "Использовать любую возможность, чтобы победить", housePoints: { Slytherin: 3 } },
+      { id: "a", text: "Сажусь и учу дальше по порядку — как получится, так получится", housePoints: { Hufflepuff: 2, Gryffindor: 1 } },
+      { id: "b", text: "Быстро прикидываю, какие темы дадут больше всего баллов, и учу только их", housePoints: { Slytherin: 2, Ravenclaw: 1 } },
+      { id: "c", text: "Пытаюсь вспомнить логику предмета целиком, а не зубрить детали", housePoints: { Ravenclaw: 2 } },
+      { id: "d", text: "Иду искать того, кто может объяснить всё за пять минут", housePoints: { Gryffindor: 2 } },
     ],
   },
   {
@@ -43,12 +43,12 @@ export const sortingQuestions: SortingQuestion[] = [
   },
   {
     id: "q5",
-    prompt: "Выбери подсвечник, который ты бы хотел получить в подарок.",
+    prompt: "На день рождения тебе разрешили выбрать один подарок. На чём остановишься?",
     options: [
-      { id: "a", text: "Тяжёлый, кованый, в виде вставшего на дыбы льва", housePoints: { Gryffindor: 2 } },
-      { id: "b", text: "Тонкий, посеребрённый, в виде змеи", housePoints: { Slytherin: 2 } },
-      { id: "c", text: "Старинный, с гравировкой ворона и лунными фазами", housePoints: { Ravenclaw: 2 } },
-      { id: "d", text: "Простой, тёплый на ощупь, сделанный вручную", housePoints: { Hufflepuff: 2 } },
+      { id: "a", text: "На вещи, сделанной специально для тебя чьими-то руками", housePoints: { Hufflepuff: 2 } },
+      { id: "b", text: "На чём-то редком и дорогом, что заметят все вокруг", housePoints: { Slytherin: 2 } },
+      { id: "c", text: "На книге о том, чего пока никто толком не изучил", housePoints: { Ravenclaw: 2 } },
+      { id: "d", text: "На чём-то, что можно опробовать в деле прямо сейчас", housePoints: { Gryffindor: 2 } },
     ],
   },
   {
@@ -63,12 +63,12 @@ export const sortingQuestions: SortingQuestion[] = [
   },
   {
     id: "q7",
-    prompt: "Какой урок в Хогвартсе звучит для тебя привлекательнее всего?",
+    prompt: "Свободный вечер без домашних заданий — редкость. Как ты его проведёшь?",
     options: [
-      { id: "a", text: "Защита от Тёмных искусств", housePoints: { Gryffindor: 2 } },
-      { id: "b", text: "Древние руны и нумерология", housePoints: { Ravenclaw: 2 } },
-      { id: "c", text: "Уход за магическими существами", housePoints: { Hufflepuff: 2 } },
-      { id: "d", text: "Зельеварение", housePoints: { Slytherin: 2 } },
+      { id: "a", text: "Тайком потренируюсь в том, что пока не очень получается", housePoints: { Gryffindor: 2 } },
+      { id: "b", text: "Засяду за головоломку или книгу, пока никто не отвлекает", housePoints: { Ravenclaw: 2 } },
+      { id: "c", text: "Соберусь с друзьями у камина просто поболтать", housePoints: { Hufflepuff: 2 } },
+      { id: "d", text: "Придумаю, как обойти правило, которое давно мешает", housePoints: { Slytherin: 2 } },
     ],
   },
 ];

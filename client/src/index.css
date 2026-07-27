@@ -257,22 +257,22 @@ input::placeholder {
   padding: 8px 12px;
 }
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(8, 5, 16, 0.75);
+.event-panel {
+  border: 2px solid var(--gold);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.15) inset, 0 0 24px rgba(244, 208, 111, 0.25);
+}
+
+.avatar-placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  z-index: 50;
-}
-
-.modal-box {
-  max-width: 560px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
+  font-size: 1.8rem;
+  background: radial-gradient(circle, rgba(202, 162, 74, 0.28), rgba(202, 162, 74, 0.08));
+  border: 1px solid var(--border-glow);
+  flex-shrink: 0;
 }
 
 .choice-list {
@@ -356,6 +356,7 @@ input::placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 16px;
 }
 
 .text-muted {
@@ -369,7 +370,98 @@ input::placeholder {
   background: rgba(74, 47, 16, 0.04);
   width: 100%;
   max-width: 420px;
-  height: 280px;
+  aspect-ratio: 3 / 2;
+  height: auto;
   display: block;
   margin: 0 auto;
+}
+
+/* ---------- Mobile responsiveness ---------- */
+
+@media (max-width: 640px) {
+  body {
+    font-size: 16px;
+  }
+
+  .app-shell {
+    padding: 14px 12px 40px;
+  }
+
+  .parchment-card {
+    padding: 18px 16px;
+  }
+
+  .panel {
+    padding: 16px 14px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    line-height: 1.25;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+
+  .top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .top-bar > div:last-child {
+    text-align: left;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .grades-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    margin-left: -12px;
+    margin-right: -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .nav-tab {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .btn {
+    padding: 11px 18px;
+  }
+
+  .choice-btn {
+    padding: 13px 14px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 380px) {
+  .stat-grid,
+  .grades-grid {
+    grid-template-columns: 1fr;
+  }
 }

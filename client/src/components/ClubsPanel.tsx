@@ -24,6 +24,7 @@ export function ClubsPanel({
           const joined = character.clubs.includes(club.id);
           return (
             <div className="item-card" key={club.id}>
+              <span className="avatar-placeholder">{club.icon}</span>
               <strong className="display" style={{ color: "var(--gold-bright)" }}>
                 {club.name}
               </strong>

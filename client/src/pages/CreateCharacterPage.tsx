@@ -51,11 +51,11 @@ export function CreateCharacterPage({ backstories, onCreated }: Props) {
                 textAlign: "left",
               }}
             >
+              <span className="avatar-placeholder">{b.icon}</span>
               <strong className="display" style={{ color: "var(--gold-bright)" }}>
                 {b.title}
               </strong>
               <span style={{ fontSize: "0.92rem" }}>{b.description}</span>
-              <span className="pill">Стартовые деньги: {b.startingMoney} галлеонов</span>
             </button>
           ))}
         </div>

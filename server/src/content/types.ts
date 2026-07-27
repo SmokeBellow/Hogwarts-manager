@@ -14,6 +14,7 @@ export interface Backstory {
   id: string;
   title: string;
   description: string;
+  icon: string;
   startingMoney: number;
   statBonus: Partial<Stats>;
 }
@@ -65,6 +66,7 @@ export interface Club {
   id: string;
   name: string;
   description: string;
+  icon: string;
   weeklyCost: number;
   statFocus: StatKey[];
 }
@@ -73,6 +75,7 @@ export interface Pet {
   id: string;
   name: string;
   species: string;
+  icon: string;
   cost: number;
   weeklyUpkeep: number;
   description: string;

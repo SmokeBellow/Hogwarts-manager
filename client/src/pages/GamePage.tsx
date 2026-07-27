@@ -5,7 +5,7 @@ import { StatsPanel } from "../components/StatsPanel";
 import { ClubsPanel } from "../components/ClubsPanel";
 import { PetsPanel } from "../components/PetsPanel";
 import { LecturesPanel } from "../components/LecturesPanel";
-import { EventModal } from "../components/EventModal";
+import { EventPanel } from "../components/EventPanel";
 
 type Tab = "overview" | "clubs" | "pets" | "lectures";
 
@@ -79,6 +79,12 @@ export function GamePage({
     <div className="app-shell">
       <StatsPanel character={character} subjects={subjects} />
 
+      {event && (
+        <div style={{ marginTop: 20 }}>
+          <EventPanel event={event} spellTemplates={spellTemplates} onResolved={handleResolved} />
+        </div>
+      )}
+
       <div className="nav-tabs" style={{ marginTop: 20 }}>
         {(["overview", "clubs", "pets", "lectures"] as Tab[]).map((t) => (
           <button key={t} className={`nav-tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>
@@ -103,8 +109,6 @@ export function GamePage({
       {tab === "clubs" && <ClubsPanel character={character} clubs={clubs} onUpdated={onCharacterUpdate} />}
       {tab === "pets" && <PetsPanel character={character} pets={pets} onUpdated={onCharacterUpdate} />}
       {tab === "lectures" && <LecturesPanel topics={lectureTopics} subjects={subjects} />}
-
-      {event && <EventModal event={event} spellTemplates={spellTemplates} onResolved={handleResolved} />}
     </div>
   );
 }

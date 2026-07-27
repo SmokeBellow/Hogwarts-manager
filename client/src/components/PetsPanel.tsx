@@ -24,12 +24,17 @@ export function PetsPanel({
   };
 
   if (character.pet) {
+    const owned = pets.find((p) => p.id === character.pet!.id);
     return (
       <div className="panel">
         <h2>Твой питомец</h2>
-        <p>
-          У тебя уже есть питомец: <strong>{character.pet.name}</strong>. Он всегда рядом и скрашивает школьные будни.
-        </p>
+        <div className="item-card" style={{ maxWidth: 260 }}>
+          {owned && <span className="avatar-placeholder">{owned.icon}</span>}
+          <p style={{ margin: 0 }}>
+            У тебя уже есть питомец: <strong>{character.pet.name}</strong>. Он всегда рядом и скрашивает школьные
+            будни.
+          </p>
+        </div>
       </div>
     );
   }
@@ -42,6 +47,7 @@ export function PetsPanel({
       <div className="card-grid" style={{ marginTop: 12 }}>
         {pets.map((pet) => (
           <div className="item-card" key={pet.id}>
+            <span className="avatar-placeholder">{pet.icon}</span>
             <strong className="display" style={{ color: "var(--gold-bright)" }}>
               {pet.name}
             </strong>
