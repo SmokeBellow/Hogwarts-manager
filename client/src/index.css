@@ -261,6 +261,35 @@ input::placeholder {
   gap: 10px;
 }
 
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  color: inherit;
+  text-align: left;
+}
+
+.collapsible-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.collapse-chevron {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  color: var(--gold);
+}
+
+.collapse-chevron.open {
+  transform: rotate(180deg);
+}
+
 .subject-chip {
   display: flex;
   flex-direction: column;

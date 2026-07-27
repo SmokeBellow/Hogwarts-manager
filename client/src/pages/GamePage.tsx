@@ -77,13 +77,11 @@ export function GamePage({
 
   return (
     <div className="app-shell">
-      <StatsPanel character={character} subjects={subjects} />
+      {event && <EventPanel event={event} spellTemplates={spellTemplates} onResolved={handleResolved} />}
 
-      {event && (
-        <div style={{ marginTop: 20 }}>
-          <EventPanel event={event} spellTemplates={spellTemplates} onResolved={handleResolved} />
-        </div>
-      )}
+      <div style={{ marginTop: event ? 20 : 0 }}>
+        <StatsPanel character={character} subjects={subjects} />
+      </div>
 
       <div className="nav-tabs" style={{ marginTop: 20 }}>
         {(["overview", "clubs", "pets", "lectures"] as Tab[]).map((t) => (

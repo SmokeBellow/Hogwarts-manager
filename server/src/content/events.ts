@@ -67,7 +67,8 @@ export const events: GameEvent[] = [
     weekMax: 4,
     title: "Первый урок полётов",
     category: "random",
-    description: "Мадам Трюк учит поднимать мётлы в воздух. У тебя метла упрямо не слушается.",
+    description:
+      "Мадам Трюк выстроила класс в два ряда у мётел, лежащих на траве. Команда простая: вытянуть руку над метлой и произнести «Вверх!» твёрдо и уверенно. У соседей мётлы уже подскакивают в руки, а твоя лишь вяло дёргается и падает обратно в траву.",
     choices: [
       {
         id: "focus",
@@ -83,6 +84,13 @@ export const events: GameEvent[] = [
         quality: 0.2,
         goodOutcome: { text: "Каким-то чудом получилось — но выглядело неуклюже.", statDeltas: { courage: 1 } },
         badOutcome: { text: "Падение с метлы у всех на виду. Синяки и уязвлённая гордость.", statDeltas: { courage: -2, charm: -1 } },
+      },
+      {
+        id: "watch-others",
+        text: "Понаблюдать, как получается у соседей, и повторить их движение руки",
+        quality: 0.55,
+        goodOutcome: { text: "Подсмотренное движение сработало — метла наконец слушается.", statDeltas: { courage: 2, intellect: 1 } },
+        badOutcome: { text: "Метла шевельнулась, но так и не поднялась — время урока почти вышло.", statDeltas: { intellect: 1 } },
       },
     ],
   },
@@ -125,11 +133,12 @@ export const events: GameEvent[] = [
     weekMax: 6,
     title: "Ошибка на зельеварении",
     category: "academic",
-    description: "Профессор зельеварения требует точности, а твой котёл начинает подозрительно шипеть.",
+    description:
+      "Класс варит Умиротворяющий бальзам — зелье, снимающее тревогу и напряжение. По рецепту на этом этапе нужно убрать котёл с огня и дать ему немного остыть, прежде чем добавлять последний ингредиент. Твой котёл начинает подозрительно шипеть и приобретать неположенный тёмно-фиолетовый оттенок, а профессор Слизнорт уже посматривает в твою сторону.",
     choices: [
       {
         id: "remove-heat",
-        text: "Снять котёл с огня",
+        text: "Снять котёл с огня и дать зелью немного остыть",
         quality: 0.9,
         goodOutcome: { text: "Ты вовремя среагировал, зелье почти спасено.", gradeDelta: { subject: "potions", amount: 6 } },
         badOutcome: { text: "Ты успел снять котёл, но зелье всё равно немного подгорело.", gradeDelta: { subject: "potions", amount: 2 } },
@@ -140,6 +149,20 @@ export const events: GameEvent[] = [
         quality: 0.15,
         goodOutcome: { text: "Каким-то чудом зелье стабилизировалось.", gradeDelta: { subject: "potions", amount: 3 } },
         badOutcome: { text: "Котёл извергает едкий дым на весь класс. Позор и штрафные баллы.", gradeDelta: { subject: "potions", amount: -6 }, statDeltas: { charm: -1 } },
+      },
+      {
+        id: "add-horn",
+        text: "На свой страх и риск добавить толчёный рог единорога раньше срока",
+        quality: 0.3,
+        goodOutcome: { text: "Неожиданно ингредиент стабилизировал зелье раньше срока — риск оправдался.", gradeDelta: { subject: "potions", amount: 5 } },
+        badOutcome: { text: "Зелье резко вскипает и покрывается пеной — явно не то, что должно получиться.", gradeDelta: { subject: "potions", amount: -4 } },
+      },
+      {
+        id: "ask-professor",
+        text: "Поднять руку и попросить профессора подойти",
+        quality: 0.6,
+        goodOutcome: { text: "Профессор подсказывает верное движение, зелье удаётся спасти сообща.", gradeDelta: { subject: "potions", amount: 4 } },
+        badOutcome: { text: "Пока профессор шёл к твоему столу, зелье успело слегка испортиться.", gradeDelta: { subject: "potions", amount: 1 } },
       },
     ],
   },
@@ -198,7 +221,8 @@ export const events: GameEvent[] = [
     weekMax: 9,
     title: "Ночное наблюдение",
     category: "academic",
-    description: "На башне астрономии холодно, а звёздная карта кажется запутанной.",
+    description:
+      "Профессор Синистра задала классу зарисовать положение Марса и двух ближайших созвездий за два часа наблюдений. Ветер треплет страницы, телескоп то и дело сбивается с наводки, а звёздная карта в руках выглядит куда запутаннее, чем на уроке.",
     choices: [
       {
         id: "study-chart",
@@ -214,6 +238,13 @@ export const events: GameEvent[] = [
         goodOutcome: { text: "На удивление, догадки оказались близки к истине.", gradeDelta: { subject: "astronomy", amount: 1 } },
         badOutcome: { text: "Профессор сразу заметил ошибки в отчёте.", gradeDelta: { subject: "astronomy", amount: -4 } },
       },
+      {
+        id: "ask-neighbor",
+        text: "Тихо свериться с записями соседа по телескопу",
+        quality: 0.45,
+        goodOutcome: { text: "Записи неплохо совпали — вдвоём разобраться оказалось проще.", gradeDelta: { subject: "astronomy", amount: 3 }, friendDelta: 1 },
+        badOutcome: { text: "Профессор заметила подозрительно похожие отчёты у вас двоих.", gradeDelta: { subject: "astronomy", amount: -2 } },
+      },
     ],
   },
   {
@@ -222,7 +253,8 @@ export const events: GameEvent[] = [
     weekMax: 10,
     title: "Дьявольские силки в теплице",
     category: "academic",
-    description: "Практическое занятие пошло не по плану — росток дьявольских силков обвил чью-то руку.",
+    description:
+      "Профессор Стебль показывает классу дьявольские силки — растение, которое душит всё, что к нему прикасается, и боится только света и тепла. Практическое занятие пошло не по плану: росток вырвался из горшка и обвил руку соседа по парте, который уже начинает паниковать.",
     choices: [
       {
         id: "calm-and-light",
@@ -237,6 +269,13 @@ export const events: GameEvent[] = [
         quality: 0.15,
         goodOutcome: { text: "Каким-то образом это сработало, хотя и выглядело рискованно.", gradeDelta: { subject: "herbology", amount: 1 } },
         badOutcome: { text: "Силки только сильнее сжались — пришлось звать на помощь профессора.", gradeDelta: { subject: "herbology", amount: -5 }, statDeltas: { courage: -1 } },
+      },
+      {
+        id: "call-professor",
+        text: "Громко позвать профессора Стебль на помощь",
+        quality: 0.55,
+        goodOutcome: { text: "Профессор оказалась рядом почти сразу и разобралась с силками сама.", gradeDelta: { subject: "herbology", amount: 3 } },
+        badOutcome: { text: "Пока профессор шла через теплицу, силки успели напугать полкласса.", gradeDelta: { subject: "herbology", amount: -1 } },
       },
     ],
   },
@@ -397,7 +436,8 @@ export const events: GameEvent[] = [
     weekMax: 17,
     title: "Сложное упражнение по трансфигурации",
     category: "academic",
-    description: "Нужно превратить спичку в иголку — задание, которое пока не даётся половине курса.",
+    description:
+      "Профессор МакГонагалл раздала классу по спичке: нужно превратить её в иголку — задание, которое пока не даётся половине курса. У кого-то спичка покрывается серебром, у кого-то только тлеет. Твоя пока выглядит как обычная спичка, и время урока уже поджимает.",
     choices: [
       {
         id: "visualize",
@@ -413,6 +453,13 @@ export const events: GameEvent[] = [
         goodOutcome: { text: "На пятый раз почти получилось.", gradeDelta: { subject: "transfiguration", amount: 2 } },
         badOutcome: { text: "Спичка так и осталась спичкой, только обгоревшей.", gradeDelta: { subject: "transfiguration", amount: -3 } },
       },
+      {
+        id: "check-textbook",
+        text: "Сверить движение палочки с учебником прямо на парте",
+        quality: 0.6,
+        goodOutcome: { text: "Пропущенная деталь движения нашлась в сносках — спичка меняется на глазах.", gradeDelta: { subject: "transfiguration", amount: 5 } },
+        badOutcome: { text: "Пока листал учебник, почти не осталось времени на попытки.", gradeDelta: { subject: "transfiguration", amount: 1 } },
+      },
     ],
   },
   {
@@ -421,7 +468,8 @@ export const events: GameEvent[] = [
     weekMax: 18,
     title: "Встреча с боггартом",
     category: "academic",
-    description: "На уроке ЗОТИ дошла твоя очередь встретиться с боггартом лицом к лицу.",
+    description:
+      "На уроке ЗОТИ профессор выкатил в класс шкаф, где заперт боггарт — существо, принимающее облик самого большого страха того, кто на него смотрит. Класс по очереди выходит вперёд, и вот дошла твоя очередь.",
     choices: [
       {
         id: "ridiculus",
@@ -439,6 +487,13 @@ export const events: GameEvent[] = [
         quality: 0.1,
         goodOutcome: { text: "Профессор быстро вмешался и помог справиться.", gradeDelta: { subject: "dada", amount: 1 } },
         badOutcome: { text: "Пришлось покинуть класс под смех однокурсников.", gradeDelta: { subject: "dada", amount: -5 }, statDeltas: { courage: -2 } },
+      },
+      {
+        id: "step-back",
+        text: "Отступить в сторону и пропустить вперёд однокурсника",
+        quality: 0.35,
+        goodOutcome: { text: "Наблюдение за чужой попыткой помогло понять принцип заклинания.", gradeDelta: { subject: "dada", amount: 2 } },
+        badOutcome: { text: "Профессор всё равно вызвал тебя следующим, а время на подготовку не помогло.", gradeDelta: { subject: "dada", amount: -2 }, statDeltas: { courage: -1 } },
       },
     ],
   },

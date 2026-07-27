@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Character, Subject } from "../types";
 
 const STAT_LABELS: Record<string, string> = {
@@ -23,6 +24,12 @@ function gradeColor(value: number): string {
 }
 
 export function StatsPanel({ character, subjects }: { character: Character; subjects: Subject[] }) {
+  const [gradesOpen, setGradesOpen] = useState(false);
+  const average =
+    subjects.length > 0
+      ? Math.round(subjects.reduce((sum, s) => sum + (character.grades[s.id] ?? 0), 0) / subjects.length)
+      : 0;
+
   return (
     <div className="panel">
       <div className="identity-row">
@@ -48,25 +55,40 @@ export function StatsPanel({ character, subjects }: { character: Character; subj
         ))}
       </div>
 
-      <h3>Оценки</h3>
-      <div className="grades-grid">
-        {subjects.map((s) => {
-          const grade = character.grades[s.id] ?? 0;
-          return (
-            <div className="subject-chip" key={s.id}>
-              <div className="subject-chip-head">
-                <span>
-                  {s.icon} {s.name}
-                </span>
-                <strong>{grade}</strong>
+      <button
+        className="collapsible-header"
+        onClick={() => setGradesOpen((v) => !v)}
+        aria-expanded={gradesOpen}
+      >
+        <h3 style={{ margin: 0 }}>Оценки</h3>
+        <div className="collapsible-header-right">
+          <div className="stat-bar-track" style={{ width: 80 }}>
+            <div className="stat-bar-fill" style={{ width: `${average}%`, background: gradeColor(average) }} />
+          </div>
+          <span>{average}</span>
+          <span className={`collapse-chevron ${gradesOpen ? "open" : ""}`}>▾</span>
+        </div>
+      </button>
+      {gradesOpen && (
+        <div className="grades-grid" style={{ marginTop: 10 }}>
+          {subjects.map((s) => {
+            const grade = character.grades[s.id] ?? 0;
+            return (
+              <div className="subject-chip" key={s.id}>
+                <div className="subject-chip-head">
+                  <span>
+                    {s.icon} {s.name}
+                  </span>
+                  <strong>{grade}</strong>
+                </div>
+                <div className="stat-bar-track">
+                  <div className="stat-bar-fill" style={{ width: `${grade}%`, background: gradeColor(grade) }} />
+                </div>
               </div>
-              <div className="stat-bar-track">
-                <div className="stat-bar-fill" style={{ width: `${grade}%`, background: gradeColor(grade) }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       <h3>Социальная жизнь</h3>
       <p>
