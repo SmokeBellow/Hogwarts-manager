@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { Character, Club, GameEvent, LectureTopic, Pet, SpellTemplate, Subject } from "../types";
 import { api } from "../api";
 import { StatsPanel } from "../components/StatsPanel";
+import { CharacterHeader } from "../components/CharacterHeader";
 import { ClubsPanel } from "../components/ClubsPanel";
 import { PetsPanel } from "../components/PetsPanel";
 import { LecturesPanel } from "../components/LecturesPanel";
@@ -77,9 +78,15 @@ export function GamePage({
 
   return (
     <div className="app-shell">
-      {event && <EventPanel event={event} spellTemplates={spellTemplates} onResolved={handleResolved} />}
+      <CharacterHeader character={character} />
 
-      <div style={{ marginTop: event ? 20 : 0 }}>
+      {event && (
+        <div style={{ marginTop: 16 }}>
+          <EventPanel event={event} spellTemplates={spellTemplates} onResolved={handleResolved} />
+        </div>
+      )}
+
+      <div style={{ marginTop: 16 }}>
         <StatsPanel character={character} subjects={subjects} />
       </div>
 

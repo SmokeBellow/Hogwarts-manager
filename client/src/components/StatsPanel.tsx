@@ -32,18 +32,7 @@ export function StatsPanel({ character, subjects }: { character: Character; subj
 
   return (
     <div className="panel">
-      <div className="identity-row">
-        <h2 style={{ margin: 0 }}>{character.name}</h2>
-        {character.house && <span className={`house-badge house-${character.house}`}>{character.house}</span>}
-      </div>
-      <div className="info-strip">
-        <div className="info-chip">💰 {character.money} галлеонов</div>
-        <div className="info-chip">
-          📅 Год {character.year} · Неделя {Math.min(character.week, character.totalWeeks)} из {character.totalWeeks}
-        </div>
-      </div>
-
-      <h3>Черты характера</h3>
+      <h3 style={{ marginTop: 0 }}>Черты характера</h3>
       <div className="stat-grid">
         {Object.entries(character.stats).map(([key, value]) => (
           <div className="stat-item" key={key}>
