@@ -740,37 +740,52 @@ input::placeholder {
 
 /* ---------- Hogwarts letter animation ---------- */
 
-.envelope-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
+.letter-scene {
+  position: relative;
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+}
+
+.letter-scene-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 0 8px;
-  margin: 0 auto;
-  animation: owl-fly-in 1s ease-out;
 }
 
-.envelope-owl {
+.stage-arriving .letter-scene-inner {
+  animation: scene-swoop-in 1.15s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.courier-owl {
   display: inline-block;
-  font-size: 4rem;
-  animation: owl-bob 2.2s ease-in-out infinite;
+  font-size: 3.2rem;
+  margin-bottom: -6px;
 }
 
-.envelope-icon {
-  display: inline-block;
-  font-size: 2.4rem;
-  margin-top: -14px;
-  animation: seal-glow 1.8s ease-in-out infinite;
+.stage-arriving .courier-owl {
+  animation: owl-bob 1.15s ease-in-out infinite;
 }
 
-@keyframes owl-fly-in {
-  from {
-    transform: translateX(-160%) translateY(-40px) rotate(-18deg);
+.stage-landed .courier-owl {
+  animation: owl-fly-off 0.7s ease-in forwards;
+}
+
+@keyframes scene-swoop-in {
+  0% {
+    transform: translate(-120%, -60px) rotate(-14deg) scale(0.8);
     opacity: 0;
   }
-  to {
+  60% {
+    transform: translate(8%, 6px) rotate(3deg) scale(1.03);
+    opacity: 1;
+  }
+  80% {
+    transform: translate(-3%, -2px) rotate(-1deg) scale(0.99);
+  }
+  100% {
     transform: none;
     opacity: 1;
   }
@@ -782,32 +797,206 @@ input::placeholder {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-8px);
+    transform: translateY(-6px);
   }
 }
 
-@keyframes seal-glow {
+@keyframes owl-fly-off {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(140%, -70px) rotate(18deg);
+    opacity: 0;
+  }
+}
+
+.hogwarts-envelope {
+  position: relative;
+  width: 150px;
+  height: 104px;
+  margin: 10px auto 0;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transform-style: preserve-3d;
+}
+
+.hogwarts-envelope:disabled {
+  cursor: default;
+}
+
+.stage-landed .hogwarts-envelope {
+  animation: envelope-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes envelope-pulse {
   0%,
   100% {
-    filter: drop-shadow(0 0 4px rgba(230, 184, 105, 0.35));
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(230, 184, 105, 0));
   }
   50% {
-    filter: drop-shadow(0 0 14px rgba(230, 184, 105, 0.85));
+    transform: scale(1.035);
+    filter: drop-shadow(0 0 14px rgba(230, 184, 105, 0.55));
+  }
+}
+
+.envelope-back {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  background: linear-gradient(160deg, var(--parchment) 0%, #c7ad82 60%, #b89a6b 100%);
+  border: 2px solid var(--brass);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.folded-letter {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  width: 76%;
+  height: 60%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #f3e6c8, #e3d0a3);
+  border: 1px solid rgba(169, 124, 63, 0.6);
+  border-radius: 2px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.stage-opening .folded-letter {
+  animation: letter-peek 0.65s ease 0.15s both;
+}
+
+.stage-unfurling .folded-letter {
+  animation: letter-unfurl-grow 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes letter-peek {
+  0% {
+    transform: translateX(-50%) translateY(0) scaleY(0.2);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-50%) translateY(-22px) scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes letter-unfurl-grow {
+  0% {
+    transform: translateX(-50%) translateY(-22px) scale(1, 1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) translateY(-22px) scale(3.4, 3.6);
+    opacity: 0;
+  }
+}
+
+.envelope-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 58%;
+  background: linear-gradient(160deg, #c7ad82, var(--parchment));
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  border-bottom: 2px solid var(--brass);
+  transform-origin: top center;
+  transform: rotateX(0deg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.stage-opening .envelope-flap,
+.stage-unfurling .envelope-flap {
+  animation: flap-open 0.65s ease forwards;
+}
+
+@keyframes flap-open {
+  0% {
+    transform: rotateX(0deg);
+  }
+  100% {
+    transform: rotateX(-165deg);
+  }
+}
+
+.envelope-seal {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #d1573a, #7a2418);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #f4d9c0;
+}
+
+.stage-opening .envelope-seal,
+.stage-unfurling .envelope-seal {
+  animation: seal-break 0.4s ease forwards;
+}
+
+@keyframes seal-break {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4) rotate(25deg);
+  }
+}
+
+.stage-unfurling .envelope-back {
+  animation: envelope-fade-out 0.5s ease 0.25s forwards;
+}
+
+@keyframes envelope-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }
 
 .letter-reveal {
-  animation: letter-reveal-in 0.5s ease;
+  animation: letter-reveal-in 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes letter-reveal-in {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(10px) scale(0.94) rotateX(-8deg);
   }
-  to {
+  100% {
     opacity: 1;
     transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter-scene-inner,
+  .courier-owl,
+  .hogwarts-envelope,
+  .folded-letter,
+  .envelope-flap,
+  .envelope-seal,
+  .envelope-back,
+  .letter-reveal {
+    animation: none !important;
   }
 }
 

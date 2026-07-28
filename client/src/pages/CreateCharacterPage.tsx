@@ -3,6 +3,7 @@ import type { Backstory } from "../types";
 import { api } from "../api";
 import { useScrollTop } from "../useScrollTop";
 import { generateRandomName } from "../nameGenerator";
+import { HogwartsLetterScene } from "../components/HogwartsLetterScene";
 
 interface Props {
   backstories: Backstory[];
@@ -11,17 +12,9 @@ interface Props {
 
 type Step = "name" | "letter" | "backstory";
 
-// Looks at the first name only (not the surname) — Russian feminine first
-// names overwhelmingly end in "а"/"я".
-function isLikelyFeminineName(fullName: string): boolean {
-  const firstName = fullName.trim().split(/\s+/)[0] ?? "";
-  return /[ая]$/i.test(firstName);
-}
-
 export function CreateCharacterPage({ backstories, onCreated }: Props) {
   const [step, setStep] = useState<Step>("name");
   const [name, setName] = useState("");
-  const [letterOpened, setLetterOpened] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -86,43 +79,7 @@ export function CreateCharacterPage({ backstories, onCreated }: Props) {
       <div className="app-shell">
         <div className="center-screen" style={{ minHeight: "70vh" }}>
           <div className="parchment-card question-card" style={{ textAlign: "center", maxWidth: 520, width: "100%" }}>
-            {!letterOpened ? (
-              <>
-                <h1 style={{ marginTop: 0 }}>Сова в пути...</h1>
-                <button
-                  className="envelope-btn"
-                  onClick={() => setLetterOpened(true)}
-                  aria-label="Открыть письмо"
-                >
-                  <span className="envelope-owl">🦉</span>
-                  <span className="envelope-icon">✉️</span>
-                </button>
-                <p className="text-muted" style={{ marginTop: 12 }}>Нажми на письмо, чтобы его открыть</p>
-              </>
-            ) : (
-              <div className="letter-reveal">
-                <h1 style={{ marginTop: 0 }}>Школа чародейства и волшебства «Хогвартс»</h1>
-                <div style={{ textAlign: "left" }}>
-                  <p>Дорог{isLikelyFeminineName(name) ? "ая" : "ой"} {name.trim()}!</p>
-                  <p>
-                    Мы рады проинформировать Вас, что Вам предоставлено место в Школе чародейства и волшебства
-                    «Хогвартс». Приложен список необходимых книг и снаряжения.
-                  </p>
-                  <p>
-                    Ждём Вашу сову не позднее 31 июля.
-                    <br />
-                    Искренне Ваша,
-                    <br />
-                    Минерва МакГонагалл,
-                    <br />
-                    заместитель директора
-                  </p>
-                </div>
-                <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setStep("backstory")}>
-                  Читать дальше
-                </button>
-              </div>
-            )}
+            <HogwartsLetterScene name={name} onContinue={() => setStep("backstory")} />
           </div>
         </div>
       </div>
