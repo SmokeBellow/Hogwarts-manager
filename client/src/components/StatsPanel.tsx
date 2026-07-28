@@ -55,7 +55,7 @@ export function StatsPanel({ character, subjects }: { character: Character; subj
       </div>
 
       <button className="collapsible-header" onClick={() => setGradesOpen((v) => !v)} aria-expanded={gradesOpen}>
-        <h3 style={{ margin: 0 }}>Оценки</h3>
+        <h3 style={{ margin: 0 }}>Знания</h3>
         <div className="collapsible-header-right">
           <AnimatedBar value={average} color={gradeColor(average)} width={80} />
           <span>{average}</span>
@@ -78,6 +78,18 @@ export function StatsPanel({ character, subjects }: { character: Character; subj
               </div>
             );
           })}
+          {character.clubs.includes("quidditch") && (
+            <div className="subject-chip">
+              <div className="subject-chip-head">
+                <span>🧹 Квиддич</span>
+                <strong>{character.grades.quidditch ?? 0}</strong>
+              </div>
+              <AnimatedBar
+                value={character.grades.quidditch ?? 0}
+                color={gradeColor(character.grades.quidditch ?? 0)}
+              />
+            </div>
+          )}
         </div>
       )}
 

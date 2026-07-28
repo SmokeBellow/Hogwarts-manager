@@ -8,7 +8,7 @@ import { PetsPanel } from "../components/PetsPanel";
 import { LecturesPanel } from "../components/LecturesPanel";
 import { EventPanel } from "../components/EventPanel";
 
-type Tab = "overview" | "clubs" | "pets" | "lectures";
+type Tab = "clubs" | "pets" | "lectures";
 
 interface Props {
   character: Character;
@@ -31,7 +31,7 @@ export function GamePage({
   onCharacterUpdate,
   onExamPhase,
 }: Props) {
-  const [tab, setTab] = useState<Tab>("overview");
+  const [tab, setTab] = useState<Tab>("clubs");
   const [event, setEvent] = useState<GameEvent | null>(null);
   const [checkingWeek, setCheckingWeek] = useState(true);
   useScrollTop(tab);
@@ -83,34 +83,27 @@ export function GamePage({
     <div className="app-shell">
       <StatsPanel character={character} subjects={subjects} />
 
-      {tab === "overview" && event && (
+      {event && (
         <div style={{ marginTop: 16 }}>
           <EventPanel key={event.id} event={event} spellTemplates={spellTemplates} onResolved={handleResolved} />
         </div>
       )}
+      {!event && checkingWeek && (
+        <div className="panel" style={{ marginTop: 16 }}>
+          <p className="text-muted" style={{ margin: 0 }}>Проверяем расписание на эту неделю...</p>
+        </div>
+      )}
 
       <div className="nav-tabs" style={{ marginTop: 20 }}>
-        {(["overview", "clubs", "pets", "lectures"] as Tab[]).map((t) => (
+        {(["clubs", "pets", "lectures"] as Tab[]).map((t) => (
           <button key={t} className={`nav-tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>
-            {t === "overview" && "Обзор"}
             {t === "clubs" && "Клубы"}
             {t === "pets" && "Питомцы"}
             {t === "lectures" && "Библиотека"}
-            {t === "overview" && event && <span className="nav-tab-dot" />}
           </button>
         ))}
       </div>
 
-      {tab === "overview" && (
-        <div className="panel">
-          <h2 style={{ marginTop: 0 }}>Школьная жизнь</h2>
-          {checkingWeek ? (
-            <p className="text-muted">Проверяем расписание на эту неделю...</p>
-          ) : (
-            <p className="text-muted">Следи за событиями факультета — они появляются автоматически каждую неделю.</p>
-          )}
-        </div>
-      )}
       {tab === "clubs" && <ClubsPanel character={character} clubs={clubs} onUpdated={onCharacterUpdate} />}
       {tab === "pets" && <PetsPanel character={character} pets={pets} />}
       {tab === "lectures" && <LecturesPanel topics={lectureTopics} subjects={subjects} />}

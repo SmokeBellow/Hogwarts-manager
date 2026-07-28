@@ -571,8 +571,8 @@ export const events: GameEvent[] = [
         quality: 0.6,
         requiresMinigame: true,
         minigameId: "quidditch",
-        goodOutcome: { text: "Ты поймал момент точно и сыграл заметную роль в победе.", statDeltas: { courage: 3, charm: 1 }, housePointsDelta: 5 },
-        badOutcome: { text: "Момент был упущен, матч прошёл для тебя не лучшим образом.", statDeltas: { courage: -1 } },
+        goodOutcome: { text: "Ты поймал момент точно и сыграл заметную роль в победе.", statDeltas: { courage: 3, charm: 1 }, housePointsDelta: 5, gradeDelta: { subject: "quidditch", amount: 8 } },
+        badOutcome: { text: "Момент был упущен, матч прошёл для тебя не лучшим образом.", statDeltas: { courage: -1 }, gradeDelta: { subject: "quidditch", amount: 2 } },
       },
       {
         id: "sit-out",
