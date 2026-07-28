@@ -47,12 +47,12 @@ export function CreateCharacterPage({ backstories, onCreated }: Props) {
               onClick={() => setSelected(b.id)}
               className="item-card"
               style={{
-                border: selected === b.id ? "2px solid var(--gold-bright)" : undefined,
+                border: selected === b.id ? "2px solid var(--brass-lit)" : undefined,
                 textAlign: "left",
               }}
             >
               <span className="avatar-placeholder">{b.icon}</span>
-              <strong className="display" style={{ color: "var(--gold-bright)" }}>
+              <strong className="display" style={{ color: "var(--brass-lit)" }}>
                 {b.title}
               </strong>
               <span style={{ fontSize: "0.92rem" }}>{b.description}</span>

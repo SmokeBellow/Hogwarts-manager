@@ -55,7 +55,7 @@ export function IntroPage({ character: initialCharacter, pets, spellTemplates, o
                 {pets.map((pet) => (
                   <div className="item-card" key={pet.id}>
                     <span className="avatar-placeholder">{pet.icon}</span>
-                    <strong className="display" style={{ color: "var(--gold-bright)" }}>
+                    <strong className="display" style={{ color: "var(--brass-lit)" }}>
                       {pet.name}
                     </strong>
                     <span style={{ fontSize: "0.9rem" }}>{pet.description}</span>

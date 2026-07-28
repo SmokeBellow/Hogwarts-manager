@@ -44,7 +44,7 @@ export function SortingPage({ onSorted }: Props) {
     <div className="app-shell">
       <div className="parchment-card question-card">
         <h1 style={{ textAlign: "center" }}>Распределяющая шляпа</h1>
-        <p className="text-muted" style={{ textAlign: "center", color: "#4a2f10" }}>
+        <p className="text-muted" style={{ textAlign: "center" }}>
           Вопрос {step + 1} из {questions.length}
         </p>
         <h2 style={{ marginTop: 20 }}>{question.prompt}</h2>

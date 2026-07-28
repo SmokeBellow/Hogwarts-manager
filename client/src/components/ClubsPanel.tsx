@@ -29,7 +29,7 @@ export function ClubsPanel({
           return (
             <div className="item-card" key={club.id} style={locked ? { opacity: 0.55 } : undefined}>
               <span className="avatar-placeholder">{club.icon}</span>
-              <strong className="display" style={{ color: "var(--gold-bright)" }}>
+              <strong className="display" style={{ color: "var(--brass-lit)" }}>
                 {club.name}
               </strong>
               <span>{club.description}</span>

@@ -46,7 +46,7 @@ export function ExamPage({ subjects, onFinished }: Props) {
                   key={idx}
                   className="choice-btn"
                   style={{
-                    border: answers[q.id] === idx ? "2px solid #4a2f10" : undefined,
+                    border: answers[q.id] === idx ? "2px solid var(--brass-lit)" : undefined,
                   }}
                   onClick={() => setAnswers((a) => ({ ...a, [q.id]: idx }))}
                 >
