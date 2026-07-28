@@ -746,6 +746,7 @@ input::placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-perspective: 1000px;
   perspective: 1000px;
 }
 
@@ -821,11 +822,15 @@ input::placeholder {
   border: none;
   padding: 0;
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
 }
 
-.hogwarts-envelope:disabled {
+.hogwarts-envelope.not-clickable {
   cursor: default;
+  pointer-events: none;
 }
 
 .stage-landed .hogwarts-envelope {
@@ -903,10 +908,13 @@ input::placeholder {
   width: 100%;
   height: 58%;
   background: linear-gradient(160deg, #c7ad82, var(--parchment));
+  -webkit-clip-path: polygon(0 0, 100% 0, 50% 100%);
   clip-path: polygon(0 0, 100% 0, 50% 100%);
   border-bottom: 2px solid var(--brass);
   transform-origin: top center;
   transform: rotateX(0deg);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
 }
 

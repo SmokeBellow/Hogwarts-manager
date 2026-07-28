@@ -43,9 +43,9 @@ export function HogwartsLetterScene({ name, onContinue }: { name: string; onCont
           {(stage === "arriving" || stage === "landed") && <span className="courier-owl">🦉</span>}
 
           <button
-            className="hogwarts-envelope"
+            className={`hogwarts-envelope ${stage !== "landed" ? "not-clickable" : ""}`}
             onClick={openLetter}
-            disabled={stage !== "landed"}
+            aria-disabled={stage !== "landed"}
             aria-label="Открыть письмо"
           >
             <span className="envelope-back" />
