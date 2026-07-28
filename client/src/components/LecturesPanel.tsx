@@ -23,7 +23,7 @@ export function LecturesPanel({ topics, subjects }: { topics: LectureTopic[]; su
         Читай и запоминай конспекты лекций — на экзаменах в конце года будут вопросы именно по этому материалу, а
         правильный ответ зависит от того, что запомнишь ты сам.
       </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+      <div className="card-grid" style={{ marginTop: 12, alignItems: "start" }}>
         {topics.map((topic) => (
           <div key={topic.id} className="item-card" style={{ gap: 6 }}>
             <button

@@ -21,7 +21,7 @@ interface StaticData {
 }
 
 function App() {
-  const { token, logout } = useAuth();
+  const { token } = useAuth();
   const [staticData, setStaticData] = useState<StaticData | null>(null);
   const [character, setCharacter] = useState<Character | null | undefined>(undefined);
   const [justSortedHouse, setJustSortedHouse] = useState<string | null>(null);
@@ -58,21 +58,8 @@ function App() {
     return <div className="center-screen">Загружаем магический мир...</div>;
   }
 
-  const topBar = (
-    <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 20px 0" }}>
-      <button className="btn" onClick={logout}>
-        Выйти
-      </button>
-    </div>
-  );
-
   if (!character) {
-    return (
-      <>
-        {topBar}
-        <CreateCharacterPage backstories={staticData.backstories} onCreated={setCharacter} />
-      </>
-    );
+    return <CreateCharacterPage backstories={staticData.backstories} onCreated={setCharacter} />;
   }
 
   if (justSortedHouse && character.house) {
@@ -92,64 +79,52 @@ function App() {
   if (character.phase === "sorting") {
     if (!introDone) {
       return (
-        <>
-          {topBar}
-          <IntroPage
-            character={character}
-            pets={staticData.pets}
-            spellTemplates={staticData.spellTemplates}
-            onDone={(char) => {
-              setCharacter(char);
-              sessionStorage.setItem(`hogwarts_intro_done_${character.id}`, "1");
-              setIntroDone(true);
-            }}
-          />
-        </>
+        <IntroPage
+          character={character}
+          pets={staticData.pets}
+          spellTemplates={staticData.spellTemplates}
+          onDone={(char) => {
+            setCharacter(char);
+            sessionStorage.setItem(`hogwarts_intro_done_${character.id}`, "1");
+            setIntroDone(true);
+          }}
+        />
       );
     }
     return (
-      <>
-        {topBar}
-        <SortingPage
-          onSorted={(house, char) => {
-            setCharacter(char);
-            setJustSortedHouse(house);
-          }}
-        />
-      </>
+      <SortingPage
+        onSorted={(house, char) => {
+          setCharacter(char);
+          setJustSortedHouse(house);
+        }}
+      />
     );
   }
 
   if (character.phase === "year") {
     return (
-      <>
-        {topBar}
-        <GamePage
-          character={character}
-          subjects={staticData.subjects}
-          clubs={staticData.clubs}
-          pets={staticData.pets}
-          lectureTopics={staticData.lectureTopics}
-          spellTemplates={staticData.spellTemplates}
-          onCharacterUpdate={setCharacter}
-          onExamPhase={setCharacter}
-        />
-      </>
+      <GamePage
+        character={character}
+        subjects={staticData.subjects}
+        clubs={staticData.clubs}
+        pets={staticData.pets}
+        lectureTopics={staticData.lectureTopics}
+        spellTemplates={staticData.spellTemplates}
+        onCharacterUpdate={setCharacter}
+        onExamPhase={setCharacter}
+      />
     );
   }
 
   if (character.phase === "exam") {
     return (
-      <>
-        {topBar}
-        <ExamPage
-          subjects={staticData.subjects}
-          onFinished={(results, char) => {
-            setExamResults(results);
-            setCharacter(char);
-          }}
-        />
-      </>
+      <ExamPage
+        subjects={staticData.subjects}
+        onFinished={(results, char) => {
+          setExamResults(results);
+          setCharacter(char);
+        }}
+      />
     );
   }
 
@@ -157,12 +132,7 @@ function App() {
     if (!examResults) {
       return <div className="center-screen">Подводим итоги года...</div>;
     }
-    return (
-      <>
-        {topBar}
-        <ResultsPage results={examResults} character={character} subjects={staticData.subjects} />
-      </>
-    );
+    return <ResultsPage results={examResults} character={character} subjects={staticData.subjects} />;
   }
 
   return <div className="center-screen">Хогвартс готовится к новому дню...</div>;

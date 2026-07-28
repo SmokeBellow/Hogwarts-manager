@@ -424,12 +424,24 @@ input::placeholder {
 }
 
 .nav-tab {
+  position: relative;
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid var(--border-glow);
   color: var(--parchment-dim);
   border-radius: 999px;
   padding: 8px 18px;
   font-size: 0.88rem;
+}
+
+.nav-tab-dot {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ember);
+  box-shadow: 0 0 6px 1px rgba(193, 87, 31, 0.8);
 }
 
 .nav-tab.active {

@@ -81,7 +81,7 @@ export function GamePage({
     <div className="app-shell">
       <StatsPanel character={character} subjects={subjects} />
 
-      {event && (
+      {tab === "overview" && event && (
         <div style={{ marginTop: 16 }}>
           <EventPanel key={event.id} event={event} spellTemplates={spellTemplates} onResolved={handleResolved} />
         </div>
@@ -94,6 +94,7 @@ export function GamePage({
             {t === "clubs" && "Клубы"}
             {t === "pets" && "Питомцы"}
             {t === "lectures" && "Библиотека"}
+            {t === "overview" && event && <span className="nav-tab-dot" />}
           </button>
         ))}
       </div>

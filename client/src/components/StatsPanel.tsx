@@ -26,6 +26,7 @@ function gradeColor(value: number): string {
 
 export function StatsPanel({ character, subjects }: { character: Character; subjects: Subject[] }) {
   const [gradesOpen, setGradesOpen] = useState(false);
+  const [socialOpen, setSocialOpen] = useState(false);
   const average =
     subjects.length > 0
       ? Math.round(subjects.reduce((sum, s) => sum + (character.grades[s.id] ?? 0), 0) / subjects.length)
@@ -80,23 +81,35 @@ export function StatsPanel({ character, subjects }: { character: Character; subj
         </div>
       )}
 
-      <h3>Социальная жизнь</h3>
-      <p>
-        Друзья: {character.friends.length}
-        {character.relationship && (
-          <>
-            {" "}
-            · Отношения с {character.relationship.name} (уровень {character.relationship.level})
-          </>
-        )}
-      </p>
-      <p>
-        Баллы факультета от тебя: <strong>{character.housePoints}</strong>
-      </p>
-      <p>
-        Клубы: {character.clubs.length > 0 ? character.clubs.join(", ") : "нет"} · Питомец:{" "}
-        {character.pet ? character.pet.name : "нет"}
-      </p>
+      <button className="collapsible-header" onClick={() => setSocialOpen((v) => !v)} aria-expanded={socialOpen}>
+        <h3 style={{ margin: 0 }}>Социальная жизнь</h3>
+        <div className="collapsible-header-right">
+          <span>
+            {character.friends.length} {character.friends.length === 1 ? "друг" : "друзей"}
+          </span>
+          <span className={`collapse-chevron ${socialOpen ? "open" : ""}`}>▾</span>
+        </div>
+      </button>
+      {socialOpen && (
+        <div style={{ marginTop: 10 }}>
+          <p>
+            Друзья: {character.friends.length}
+            {character.relationship && (
+              <>
+                {" "}
+                · Отношения с {character.relationship.name} (уровень {character.relationship.level})
+              </>
+            )}
+          </p>
+          <p>
+            Баллы факультета от тебя: <strong>{character.housePoints}</strong>
+          </p>
+          <p>
+            Клубы: {character.clubs.length > 0 ? character.clubs.join(", ") : "нет"} · Питомец:{" "}
+            {character.pet ? character.pet.name : "нет"}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
