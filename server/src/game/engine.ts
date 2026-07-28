@@ -3,10 +3,10 @@ import { backstories } from "../content/backstories.js";
 import { sortingQuestions } from "../content/sorting.js";
 import { events, totalWeeksPerYear } from "../content/events.js";
 import { subjects } from "../content/subjects.js";
-import { clubs } from "../content/clubs.js";
 import { pets } from "../content/pets.js";
 import { examQuestions } from "../content/examQuestions.js";
 import { npcNames } from "../content/npcNames.js";
+import type { NpcName } from "../content/npcNames.js";
 import type { GameEvent, House, Stats, StatKey, EventOutcome } from "../content/types.js";
 
 function hashSeed(input: string): number {
@@ -17,16 +17,29 @@ function hashSeed(input: string): number {
   return Math.abs(hash);
 }
 
-function pickNpcName(characterId: number, seedKey: string): string {
+function pickNpcName(characterId: number, seedKey: string): NpcName {
   return npcNames[hashSeed(`${characterId}:${seedKey}`) % npcNames.length];
 }
 
 function eventNeedsName(event: GameEvent): boolean {
   return (
-    event.title.includes("{name}") ||
-    event.description.includes("{name}") ||
-    event.choices.some((c) => c.text.includes("{name}"))
+    event.title.includes("{name") ||
+    event.description.includes("{name") ||
+    event.choices.some((c) => c.text.includes("{name"))
   );
+}
+
+// Applies "{name}"/"{name_acc}"/"{name_gen}"/"{name_ins}" case tokens and
+// "{g:masculine|feminine}" gender-agreement tokens (e.g. verb endings),
+// resolved against the picked NPC so text reads grammatically either way:
+// "Разговорить Розалинду" / "Разговорить Финеаса", "{name} реши{g:л|ла}".
+function applyNameTokens(text: string, npc: NpcName): string {
+  const withCase = text
+    .replaceAll("{name_acc}", npc.accusative)
+    .replaceAll("{name_gen}", npc.genitive)
+    .replaceAll("{name_ins}", npc.instrumental)
+    .replaceAll("{name}", npc.nominative);
+  return withCase.replace(/\{g:([^|}]*)\|([^}]*)\}/g, (_match, masc, fem) => (npc.gender === "f" ? fem : masc));
 }
 
 export interface CharacterRow {
@@ -185,8 +198,8 @@ export function getCurrentEvent(characterId: number) {
   const pool = guaranteedMatches.length > 0 ? guaranteedMatches : matching;
   const candidate = pool[Math.floor(Math.random() * pool.length)];
 
-  const name = eventNeedsName(candidate) ? pickNpcName(characterId, candidate.nameSeedKey ?? candidate.id) : null;
-  const sub = (text: string) => (name ? text.replaceAll("{name}", name) : text);
+  const npc = eventNeedsName(candidate) ? pickNpcName(characterId, candidate.nameSeedKey ?? candidate.id) : null;
+  const sub = (text: string) => (npc ? applyNameTokens(text, npc) : text);
 
   return {
     id: candidate.id,
@@ -250,9 +263,8 @@ export function resolveEventChoice(
   const isBad = Math.random() < badProbability;
   const softenFactor = isBad ? 1 - effQuality * 0.5 : 1;
   const outcome: EventOutcome = isBad ? choice.badOutcome : choice.goodOutcome;
-  const outcomeText = eventNeedsName(event)
-    ? outcome.text.replaceAll("{name}", pickNpcName(characterId, event.nameSeedKey ?? event.id))
-    : outcome.text;
+  const eventNpc = eventNeedsName(event) ? pickNpcName(characterId, event.nameSeedKey ?? event.id) : null;
+  const outcomeText = eventNpc ? applyNameTokens(outcome.text, eventNpc) : outcome.text;
 
   const grades: Record<string, number> = JSON.parse(character.grades);
   const friends: { name: string; level: number }[] = JSON.parse(character.friends);
@@ -276,9 +288,7 @@ export function resolveEventChoice(
   if (outcome.friendDelta) {
     const delta = scale(outcome.friendDelta);
     if (delta > 0) {
-      const friendName = eventNeedsName(event)
-        ? pickNpcName(characterId, event.nameSeedKey ?? event.id)
-        : `Однокурсник №${friends.length + 1}`;
+      const friendName = eventNpc ? eventNpc.nominative : `Однокурсник №${friends.length + 1}`;
       friends.push({ name: friendName, level: delta });
     } else if (friends.length > 0) {
       friends.pop();
@@ -286,7 +296,10 @@ export function resolveEventChoice(
   }
   if (outcome.relationshipDelta) {
     const delta = scale(outcome.relationshipDelta);
-    if (!relationship) relationship = { name: pickNpcName(characterId, "romance-interest"), level: 0 };
+    if (!relationship) {
+      const romanceNpc = eventNpc ?? pickNpcName(characterId, "romance-interest");
+      relationship = { name: romanceNpc.nominative, level: 0 };
+    }
     relationship.level = clamp(relationship.level + delta, -5, 20);
     if (relationship.level <= -3) relationship = null;
   }
@@ -332,19 +345,6 @@ export function resolveEventChoice(
     outcomeText,
     character: serializeCharacter(updated),
   };
-}
-
-export function joinClub(characterId: number, clubId: string) {
-  const club = clubs.find((c) => c.id === clubId);
-  if (!club) throw new Error("Клуб не найден");
-  const character = getCharacterById(characterId)!;
-  const list: string[] = JSON.parse(character.clubs);
-  if (!list.includes(clubId)) list.push(clubId);
-  db.prepare(`UPDATE characters SET clubs = ?, updated_at = datetime('now') WHERE id = ?`).run(
-    JSON.stringify(list),
-    characterId
-  );
-  return serializeCharacter(getCharacterById(characterId)!);
 }
 
 export function leaveClub(characterId: number, clubId: string) {

@@ -18,7 +18,6 @@ import {
   getCurrentEvent,
   resolveEventChoice,
   advanceWeek,
-  joinClub,
   leaveClub,
   setQuidditchPosition,
   QUIDDITCH_POSITIONS,
@@ -130,18 +129,6 @@ gameRouter.post("/week/advance", (req: AuthedRequest, res) => {
 });
 
 const clubSchema = z.object({ clubId: z.string() });
-
-gameRouter.post("/clubs/join", (req: AuthedRequest, res) => {
-  const character = ownedCharacterOr404(req, res);
-  if (!character) return;
-  const parsed = clubSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: "Некорректные данные" });
-  try {
-    res.json({ character: joinClub(character.id, parsed.data.clubId) });
-  } catch (e) {
-    res.status(400).json({ error: (e as Error).message });
-  }
-});
 
 gameRouter.post("/clubs/leave", (req: AuthedRequest, res) => {
   const character = ownedCharacterOr404(req, res);

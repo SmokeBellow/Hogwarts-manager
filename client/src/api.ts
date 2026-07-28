@@ -50,8 +50,6 @@ export const api = {
       body: JSON.stringify({ eventId, choiceId, challengeSuccess }),
     }),
   advanceWeek: () => request<{ character: any }>("/game/week/advance", { method: "POST" }),
-  joinClub: (clubId: string) =>
-    request<{ character: any }>("/game/clubs/join", { method: "POST", body: JSON.stringify({ clubId }) }),
   leaveClub: (clubId: string) =>
     request<{ character: any }>("/game/clubs/leave", { method: "POST", body: JSON.stringify({ clubId }) }),
   setQuidditchPosition: (position: string) =>

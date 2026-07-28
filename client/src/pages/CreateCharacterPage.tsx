@@ -11,6 +11,13 @@ interface Props {
 
 type Step = "name" | "letter" | "backstory";
 
+// Looks at the first name only (not the surname) — Russian feminine first
+// names overwhelmingly end in "а"/"я".
+function isLikelyFeminineName(fullName: string): boolean {
+  const firstName = fullName.trim().split(/\s+/)[0] ?? "";
+  return /[ая]$/i.test(firstName);
+}
+
 export function CreateCharacterPage({ backstories, onCreated }: Props) {
   const [step, setStep] = useState<Step>("name");
   const [name, setName] = useState("");
@@ -96,7 +103,7 @@ export function CreateCharacterPage({ backstories, onCreated }: Props) {
               <div className="letter-reveal">
                 <h1 style={{ marginTop: 0 }}>Школа чародейства и волшебства «Хогвартс»</h1>
                 <div style={{ textAlign: "left" }}>
-                  <p>Дорог{name.trim().endsWith("а") ? "ая" : "ой"} {name.trim()}!</p>
+                  <p>Дорог{isLikelyFeminineName(name) ? "ая" : "ой"} {name.trim()}!</p>
                   <p>
                     Мы рады проинформировать Вас, что Вам предоставлено место в Школе чародейства и волшебства
                     «Хогвартс». Приложен список необходимых книг и снаряжения.

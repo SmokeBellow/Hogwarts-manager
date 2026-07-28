@@ -31,7 +31,7 @@ export function GraduationPage({ character, subjects }: { character: Character; 
           <p>
             За семь лет дом «{character.house}» получил от тебя {character.housePoints} очков. Рядом с тобой{" "}
             {character.friends.length} {character.friends.length === 1 ? "друг" : "друзей"}
-            {character.relationship ? `, а сердце занято — отношения с ${character.relationship.name}.` : "."}
+            {character.relationship ? `, а сердце занято: ${character.relationship.name}.` : "."}
           </p>
           {character.clubs.length > 0 && <p>Внеклассные занятия: {character.clubs.join(", ")}.</p>}
           {character.quidditchPosition && (

@@ -17,8 +17,8 @@ export function ClubsPanel({
   clubs: Club[];
   onUpdated: (c: Character) => void;
 }) {
-  const toggle = async (clubId: string, joined: boolean) => {
-    const res = joined ? await api.leaveClub(clubId) : await api.joinClub(clubId);
+  const leave = async (clubId: string) => {
+    const res = await api.leaveClub(clubId);
     onUpdated(res.character);
   };
 
@@ -31,8 +31,8 @@ export function ClubsPanel({
     <div className="panel">
       <h2>Внеклассные занятия</h2>
       <p className="text-muted">
-        Записаться можно на ярмарке кружков в начале года — здесь же можно вступить или выйти из клуба в любой
-        момент.
+        Записаться в клуб можно, только если подвернётся подходящий случай — присмотрись к тому, что происходит
+        вокруг. Выйти из клуба можно в любой момент.
       </p>
       <div className="card-grid" style={{ marginTop: 12 }}>
         {clubs.map((club) => {
@@ -47,13 +47,12 @@ export function ClubsPanel({
               <span>{club.description}</span>
               {locked ? (
                 <span className="pill">🔒 Доступно с {club.minYear} курса</span>
-              ) : (
-                <button
-                  className={joined ? "btn btn-danger" : "btn btn-primary"}
-                  onClick={() => toggle(club.id, joined)}
-                >
-                  {joined ? "Покинуть клуб" : "Вступить"}
+              ) : joined ? (
+                <button className="btn btn-danger" onClick={() => leave(club.id)}>
+                  Покинуть клуб
                 </button>
+              ) : (
+                <span className="pill">Нужен подходящий случай</span>
               )}
               {joined && club.id === "quidditch" && (
                 <div style={{ marginTop: 10, width: "100%" }}>

@@ -60,7 +60,7 @@ export function ResultsPage({
           <p>
             Дом «{character.house}» получил от тебя {character.housePoints} очков за этот год. Друзей рядом:{" "}
             {character.friends.length}
-            {character.relationship ? `, а сердце занято — отношения с ${character.relationship.name}.` : "."}
+            {character.relationship ? `, а сердце занято: ${character.relationship.name}.` : "."}
           </p>
           {isFinalYear ? (
             <p className="text-muted">Седьмой курс позади — впереди выпускной вечер в Большом зале.</p>

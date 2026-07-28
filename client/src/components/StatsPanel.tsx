@@ -109,7 +109,7 @@ export function StatsPanel({ character, subjects }: { character: Character; subj
             {character.relationship && (
               <>
                 {" "}
-                · Отношения с {character.relationship.name} (уровень {character.relationship.level})
+                · Отношения: {character.relationship.name} (уровень {character.relationship.level})
               </>
             )}
           </p>
