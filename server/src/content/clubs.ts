@@ -6,7 +6,6 @@ export const clubs: Club[] = [
     name: "Квиддичная команда факультета",
     description: "Тренировки трижды в неделю, риск травм, но и шанс стать звездой факультета.",
     icon: "🧹",
-    weeklyCost: 0,
     statFocus: ["courage", "charm"],
     minYear: 2,
   },
@@ -15,7 +14,6 @@ export const clubs: Club[] = [
     name: "Клуб плюй-камней",
     description: "Спокойный клуб для тех, кто ценит компанию и не любит рисковать.",
     icon: "⚫",
-    weeklyCost: 1,
     statFocus: ["loyalty", "charm"],
   },
   {
@@ -23,7 +21,6 @@ export const clubs: Club[] = [
     name: "Дуэльный клуб",
     description: "Оттачивай реакцию и заклинания в дружеских поединках под присмотром старших студентов.",
     icon: "⚔️",
-    weeklyCost: 2,
     statFocus: ["courage", "intellect"],
   },
 ];

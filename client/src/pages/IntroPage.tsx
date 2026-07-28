@@ -59,11 +59,8 @@ export function IntroPage({ character: initialCharacter, pets, spellTemplates, o
                       {pet.name}
                     </strong>
                     <span style={{ fontSize: "0.9rem" }}>{pet.description}</span>
-                    <span className="pill">
-                      {pet.cost} гал. · {pet.weeklyUpkeep > 0 ? `${pet.weeklyUpkeep} гал./нед.` : "без доплат"}
-                    </span>
-                    <button className="btn btn-primary" disabled={character.money < pet.cost} onClick={() => buyPet(pet.id)}>
-                      Купить
+                    <button className="btn btn-primary" onClick={() => buyPet(pet.id)}>
+                      Выбрать
                     </button>
                   </div>
                 ))}

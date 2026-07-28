@@ -36,15 +36,12 @@ export function ClubsPanel({
               {locked ? (
                 <span className="pill">🔒 Доступно с {club.minYear} курса</span>
               ) : (
-                <>
-                  <span className="pill">{club.weeklyCost > 0 ? `${club.weeklyCost} гал./неделю` : "Бесплатно"}</span>
-                  <button
-                    className={joined ? "btn btn-danger" : "btn btn-primary"}
-                    onClick={() => toggle(club.id, joined)}
-                  >
-                    {joined ? "Покинуть клуб" : "Вступить"}
-                  </button>
-                </>
+                <button
+                  className={joined ? "btn btn-danger" : "btn btn-primary"}
+                  onClick={() => toggle(club.id, joined)}
+                >
+                  {joined ? "Покинуть клуб" : "Вступить"}
+                </button>
               )}
             </div>
           );

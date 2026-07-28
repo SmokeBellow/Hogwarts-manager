@@ -18,7 +18,6 @@ export interface CharacterRow {
   year: number;
   week: number;
   phase: string;
-  money: number;
   stats: string;
   grades: string;
   friends: string;
@@ -51,7 +50,6 @@ export function serializeCharacter(row: CharacterRow) {
     week: row.week,
     totalWeeks: totalWeeksPerYear,
     phase: row.phase,
-    money: row.money,
     stats: JSON.parse(row.stats) as Stats,
     grades: JSON.parse(row.grades) as Record<string, number>,
     friends: JSON.parse(row.friends) as { name: string; level: number }[],
@@ -84,13 +82,18 @@ export function createCharacter(userId: number, name: string, backstoryId: strin
 
   const grades: Record<string, number> = {};
   for (const s of subjects) grades[s.id] = 0;
+  if (backstory.gradeBonus) {
+    for (const [subjectId, value] of Object.entries(backstory.gradeBonus)) {
+      grades[subjectId] = clamp((grades[subjectId] ?? 0) + value, 0, 100);
+    }
+  }
 
   const info = db
     .prepare(
-      `INSERT INTO characters (user_id, name, backstory_id, money, stats, grades)
-       VALUES (?, ?, ?, ?, ?, ?)`
+      `INSERT INTO characters (user_id, name, backstory_id, stats, grades)
+       VALUES (?, ?, ?, ?, ?)`
     )
-    .run(userId, name, backstoryId, backstory.startingMoney, JSON.stringify(stats), JSON.stringify(grades));
+    .run(userId, name, backstoryId, JSON.stringify(stats), JSON.stringify(grades));
 
   return getCharacterById(info.lastInsertRowid as number)!;
 }
@@ -171,41 +174,12 @@ export function getCurrentEvent(characterId: number) {
   };
 }
 
-function applyUpkeep(character: CharacterRow): CharacterRow {
-  const clubIds: string[] = JSON.parse(character.clubs);
-  const pet = character.pet ? (JSON.parse(character.pet) as { id: string; name: string }) : null;
-  let cost = 0;
-  for (const clubId of clubIds) {
-    const club = clubs.find((c) => c.id === clubId);
-    if (club) cost += club.weeklyCost;
-  }
-  if (pet) {
-    const petDef = pets.find((p) => p.id === pet.id);
-    if (petDef) cost += petDef.weeklyUpkeep;
-  }
-  if (cost === 0) return character;
-
-  const stats: Stats = JSON.parse(character.stats);
-  let money = character.money - cost;
-  if (money < 0) {
-    money = 0;
-    stats.charm = clamp(stats.charm - 1, 0, 100);
-  }
-  db.prepare(`UPDATE characters SET money = ?, stats = ?, updated_at = datetime('now') WHERE id = ?`).run(
-    money,
-    JSON.stringify(stats),
-    character.id
-  );
-  return getCharacterById(character.id)!;
-}
-
 export function advanceWeek(characterId: number) {
   let character = getCharacterById(characterId);
   if (!character) throw new Error("Персонаж не найден");
   const nextWeek = character.week + 1;
   db.prepare(`UPDATE characters SET week = ?, updated_at = datetime('now') WHERE id = ?`).run(nextWeek, characterId);
   character = getCharacterById(characterId)!;
-  character = applyUpkeep(character);
 
   if (character.week > totalWeeksPerYear && character.phase === "year") {
     db.prepare(`UPDATE characters SET phase = 'exam', updated_at = datetime('now') WHERE id = ?`).run(characterId);
@@ -252,13 +226,11 @@ export function resolveEventChoice(
   let relationship = character.relationship
     ? (JSON.parse(character.relationship) as { name: string; level: number })
     : null;
-  let money = character.money;
   let housePoints = character.house_points;
   const memberClubs: string[] = JSON.parse(character.clubs);
 
   const scale = (v: number) => (isBad ? Math.round(v * softenFactor) : v);
 
-  if (outcome.moneyDelta) money += scale(outcome.moneyDelta);
   if (outcome.statDeltas) {
     for (const [key, value] of Object.entries(outcome.statDeltas)) {
       stats[key as StatKey] = clamp(stats[key as StatKey] + scale(value ?? 0), 0, 100);
@@ -286,15 +258,13 @@ export function resolveEventChoice(
   if (outcome.joinClub && !memberClubs.includes(outcome.joinClub)) {
     memberClubs.push(outcome.joinClub);
   }
-  money = Math.max(0, money);
 
   const seen: string[] = JSON.parse(character.seen_events);
   seen.push(event.id);
 
   db.prepare(
-    `UPDATE characters SET money = ?, stats = ?, grades = ?, friends = ?, relationship = ?, house_points = ?, clubs = ?, seen_events = ?, updated_at = datetime('now') WHERE id = ?`
+    `UPDATE characters SET stats = ?, grades = ?, friends = ?, relationship = ?, house_points = ?, clubs = ?, seen_events = ?, updated_at = datetime('now') WHERE id = ?`
   ).run(
-    money,
     JSON.stringify(stats),
     JSON.stringify(grades),
     JSON.stringify(friends),
@@ -356,9 +326,7 @@ export function buyPet(characterId: number, petId: string) {
   if (!pet) throw new Error("Питомец не найден");
   const character = getCharacterById(characterId)!;
   if (character.pet) throw new Error("У тебя уже есть питомец");
-  if (character.money < pet.cost) throw new Error("Недостаточно денег");
-  db.prepare(`UPDATE characters SET money = money - ?, pet = ?, updated_at = datetime('now') WHERE id = ?`).run(
-    pet.cost,
+  db.prepare(`UPDATE characters SET pet = ?, updated_at = datetime('now') WHERE id = ?`).run(
     JSON.stringify({ id: pet.id, name: pet.name }),
     characterId
   );

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Character, Subject } from "../types";
+import { AnimatedBar } from "./AnimatedBar";
 
 const STAT_LABELS: Record<string, string> = {
   courage: "Смелость",
@@ -32,28 +33,30 @@ export function StatsPanel({ character, subjects }: { character: Character; subj
 
   return (
     <div className="panel">
-      <h3 style={{ marginTop: 0 }}>Черты характера</h3>
+      <div className="identity-row">
+        <h2 style={{ margin: 0 }}>{character.name}</h2>
+        {character.house && <span className={`house-badge house-${character.house}`}>{character.house}</span>}
+      </div>
+      <div className="info-strip">
+        <div className="info-chip">
+          📅 Год {character.year} · Неделя {Math.min(character.week, character.totalWeeks)} из {character.totalWeeks}
+        </div>
+      </div>
+
+      <h3>Черты характера</h3>
       <div className="stat-grid">
         {Object.entries(character.stats).map(([key, value]) => (
           <div className="stat-item" key={key}>
             <span className="stat-label">{STAT_LABELS[key] ?? key}</span>
-            <div className="stat-bar-track">
-              <div className="stat-bar-fill" style={{ width: `${value}%` }} />
-            </div>
+            <AnimatedBar value={value} />
           </div>
         ))}
       </div>
 
-      <button
-        className="collapsible-header"
-        onClick={() => setGradesOpen((v) => !v)}
-        aria-expanded={gradesOpen}
-      >
+      <button className="collapsible-header" onClick={() => setGradesOpen((v) => !v)} aria-expanded={gradesOpen}>
         <h3 style={{ margin: 0 }}>Оценки</h3>
         <div className="collapsible-header-right">
-          <div className="stat-bar-track" style={{ width: 80 }}>
-            <div className="stat-bar-fill" style={{ width: `${average}%`, background: gradeColor(average) }} />
-          </div>
+          <AnimatedBar value={average} color={gradeColor(average)} width={80} />
           <span>{average}</span>
           <span className={`collapse-chevron ${gradesOpen ? "open" : ""}`}>▾</span>
         </div>
@@ -70,9 +73,7 @@ export function StatsPanel({ character, subjects }: { character: Character; subj
                   </span>
                   <strong>{grade}</strong>
                 </div>
-                <div className="stat-bar-track">
-                  <div className="stat-bar-fill" style={{ width: `${grade}%`, background: gradeColor(grade) }} />
-                </div>
+                <AnimatedBar value={grade} color={gradeColor(grade)} />
               </div>
             );
           })}

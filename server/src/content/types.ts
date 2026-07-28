@@ -15,8 +15,8 @@ export interface Backstory {
   title: string;
   description: string;
   icon: string;
-  startingMoney: number;
   statBonus: Partial<Stats>;
+  gradeBonus?: Record<string, number>;
 }
 
 export interface SortingOption {
@@ -33,7 +33,6 @@ export interface SortingQuestion {
 
 export interface EventOutcome {
   text: string;
-  moneyDelta?: number;
   statDeltas?: Partial<Stats>;
   gradeDelta?: { subject: string; amount: number };
   friendDelta?: number;
@@ -61,7 +60,7 @@ export interface GameEvent {
   weekMax: number;
   title: string;
   description: string;
-  category: "academic" | "social" | "random" | "club" | "money";
+  category: "academic" | "social" | "random" | "club";
   choices: EventChoice[];
   minYear?: number; // event only appears from this school year onward, default 1
   requiresClub?: string; // event only appears if the character has joined this club
@@ -73,7 +72,6 @@ export interface Club {
   name: string;
   description: string;
   icon: string;
-  weeklyCost: number;
   statFocus: StatKey[];
   minYear?: number; // club can only be joined from this school year onward, default 1
 }
@@ -83,8 +81,6 @@ export interface Pet {
   name: string;
   species: string;
   icon: string;
-  cost: number;
-  weeklyUpkeep: number;
   description: string;
 }
 

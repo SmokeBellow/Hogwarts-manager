@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import type { Character, Club, GameEvent, LectureTopic, Pet, SpellTemplate, Subject } from "../types";
 import { api } from "../api";
 import { StatsPanel } from "../components/StatsPanel";
-import { CharacterHeader } from "../components/CharacterHeader";
 import { ClubsPanel } from "../components/ClubsPanel";
 import { PetsPanel } from "../components/PetsPanel";
 import { LecturesPanel } from "../components/LecturesPanel";
@@ -68,27 +67,25 @@ export function GamePage({
 
   const handleResolved = (updatedCharacter: Character) => {
     onCharacterUpdate(updatedCharacter);
-    setEvent(null);
     if (updatedCharacter.phase === "exam") {
       onExamPhase(updatedCharacter);
       return;
     }
+    // Deliberately don't clear `event` here: the EventPanel keeps showing
+    // the outcome (via its own state) while refreshEvent fetches the next
+    // one in the background, then swaps in place — no blank flash.
     refreshEvent();
   };
 
   return (
     <div className="app-shell">
-      <CharacterHeader character={character} />
+      <StatsPanel character={character} subjects={subjects} />
 
       {event && (
         <div style={{ marginTop: 16 }}>
-          <EventPanel event={event} spellTemplates={spellTemplates} onResolved={handleResolved} />
+          <EventPanel key={event.id} event={event} spellTemplates={spellTemplates} onResolved={handleResolved} />
         </div>
       )}
-
-      <div style={{ marginTop: 16 }}>
-        <StatsPanel character={character} subjects={subjects} />
-      </div>
 
       <div className="nav-tabs" style={{ marginTop: 20 }}>
         {(["overview", "clubs", "pets", "lectures"] as Tab[]).map((t) => (

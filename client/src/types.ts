@@ -17,7 +17,6 @@ export interface Character {
   week: number;
   totalWeeks: number;
   phase: "sorting" | "year" | "exam" | "results";
-  money: number;
   stats: Stats;
   grades: Record<string, number>;
   friends: { name: string; level: number }[];
@@ -33,8 +32,8 @@ export interface Backstory {
   title: string;
   description: string;
   icon: string;
-  startingMoney: number;
   statBonus: Partial<Stats>;
+  gradeBonus?: Record<string, number>;
 }
 
 export interface SortingOption {
@@ -79,7 +78,6 @@ export interface Club {
   name: string;
   description: string;
   icon: string;
-  weeklyCost: number;
   statFocus: string[];
   minYear?: number;
 }
@@ -89,8 +87,6 @@ export interface Pet {
   name: string;
   species: string;
   icon: string;
-  cost: number;
-  weeklyUpkeep: number;
   description: string;
 }
 
