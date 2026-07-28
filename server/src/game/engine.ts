@@ -6,7 +6,28 @@ import { subjects } from "../content/subjects.js";
 import { clubs } from "../content/clubs.js";
 import { pets } from "../content/pets.js";
 import { examQuestions } from "../content/examQuestions.js";
-import type { House, Stats, StatKey, EventOutcome } from "../content/types.js";
+import { npcNames } from "../content/npcNames.js";
+import type { GameEvent, House, Stats, StatKey, EventOutcome } from "../content/types.js";
+
+function hashSeed(input: string): number {
+  let hash = 5381;
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash * 33) ^ input.charCodeAt(i);
+  }
+  return Math.abs(hash);
+}
+
+function pickNpcName(characterId: number, seedKey: string): string {
+  return npcNames[hashSeed(`${characterId}:${seedKey}`) % npcNames.length];
+}
+
+function eventNeedsName(event: GameEvent): boolean {
+  return (
+    event.title.includes("{name}") ||
+    event.description.includes("{name}") ||
+    event.choices.some((c) => c.text.includes("{name}"))
+  );
+}
 
 export interface CharacterRow {
   id: number;
@@ -28,7 +49,11 @@ export interface CharacterRow {
   house_points: number;
   seen_events: string;
   status: string;
+  quidditch_position: string | null;
 }
+
+export const QUIDDITCH_POSITIONS = ["keeper", "chaser", "beater", "seeker"] as const;
+export type QuidditchPosition = (typeof QUIDDITCH_POSITIONS)[number];
 
 const BASE_STAT = 30;
 
@@ -58,6 +83,7 @@ export function serializeCharacter(row: CharacterRow) {
     pet: row.pet ? (JSON.parse(row.pet) as { id: string; name: string }) : null,
     housePoints: row.house_points,
     status: row.status,
+    quidditchPosition: row.quidditch_position as QuidditchPosition | null,
   };
 }
 
@@ -145,27 +171,31 @@ export function getCurrentEvent(characterId: number) {
       character.week <= e.weekMax &&
       !seen.includes(e.id) &&
       character.year >= (e.minYear ?? 1) &&
-      (!e.requiresClub || memberClubs.includes(e.requiresClub))
+      (!e.requiresClub || memberClubs.includes(e.requiresClub)) &&
+      (!e.excludesClub || !memberClubs.includes(e.excludesClub))
   );
   if (matching.length === 0) return null;
 
   // Guaranteed events (e.g. the clubs fair, a match the player signed up for)
   // must win over overlapping optional events for the same week, otherwise
-  // their narrow week window can close before they're ever picked.
-  matching.sort((a, b) => {
-    if (!!a.guaranteed !== !!b.guaranteed) return a.guaranteed ? -1 : 1;
-    return a.weekMin - b.weekMin;
-  });
-  const candidate = matching[0];
+  // their narrow week window can close before they're ever picked. Within
+  // the winning tier, pick randomly so different players — or the same
+  // player on a replay — don't always see the same event on the same week.
+  const guaranteedMatches = matching.filter((e) => e.guaranteed);
+  const pool = guaranteedMatches.length > 0 ? guaranteedMatches : matching;
+  const candidate = pool[Math.floor(Math.random() * pool.length)];
+
+  const name = eventNeedsName(candidate) ? pickNpcName(characterId, candidate.nameSeedKey ?? candidate.id) : null;
+  const sub = (text: string) => (name ? text.replaceAll("{name}", name) : text);
 
   return {
     id: candidate.id,
-    title: candidate.title,
-    description: candidate.description,
+    title: sub(candidate.title),
+    description: sub(candidate.description),
     category: candidate.category,
     choices: candidate.choices.map((c) => ({
       id: c.id,
-      text: c.text,
+      text: sub(c.text),
       requiresSpell: c.requiresSpell,
       spellId: c.spellId,
       requiresMinigame: c.requiresMinigame,
@@ -220,6 +250,9 @@ export function resolveEventChoice(
   const isBad = Math.random() < badProbability;
   const softenFactor = isBad ? 1 - effQuality * 0.5 : 1;
   const outcome: EventOutcome = isBad ? choice.badOutcome : choice.goodOutcome;
+  const outcomeText = eventNeedsName(event)
+    ? outcome.text.replaceAll("{name}", pickNpcName(characterId, event.nameSeedKey ?? event.id))
+    : outcome.text;
 
   const grades: Record<string, number> = JSON.parse(character.grades);
   const friends: { name: string; level: number }[] = JSON.parse(character.friends);
@@ -243,14 +276,17 @@ export function resolveEventChoice(
   if (outcome.friendDelta) {
     const delta = scale(outcome.friendDelta);
     if (delta > 0) {
-      friends.push({ name: `Однокурсник №${friends.length + 1}`, level: delta });
+      const friendName = eventNeedsName(event)
+        ? pickNpcName(characterId, event.nameSeedKey ?? event.id)
+        : `Однокурсник №${friends.length + 1}`;
+      friends.push({ name: friendName, level: delta });
     } else if (friends.length > 0) {
       friends.pop();
     }
   }
   if (outcome.relationshipDelta) {
     const delta = scale(outcome.relationshipDelta);
-    if (!relationship) relationship = { name: "Твоя вторая половинка", level: 0 };
+    if (!relationship) relationship = { name: pickNpcName(characterId, "romance-interest"), level: 0 };
     relationship.level = clamp(relationship.level + delta, -5, 20);
     if (relationship.level <= -3) relationship = null;
   }
@@ -285,7 +321,7 @@ export function resolveEventChoice(
     event.id,
     choice.id,
     isBad ? "bad" : "good",
-    outcome.text,
+    outcomeText,
     JSON.stringify(outcome)
   );
 
@@ -293,7 +329,7 @@ export function resolveEventChoice(
 
   return {
     isBad,
-    outcomeText: outcome.text,
+    outcomeText,
     character: serializeCharacter(updated),
   };
 }
@@ -314,8 +350,27 @@ export function joinClub(characterId: number, clubId: string) {
 export function leaveClub(characterId: number, clubId: string) {
   const character = getCharacterById(characterId)!;
   const list: string[] = JSON.parse(character.clubs).filter((id: string) => id !== clubId);
-  db.prepare(`UPDATE characters SET clubs = ?, updated_at = datetime('now') WHERE id = ?`).run(
-    JSON.stringify(list),
+  if (clubId === "quidditch") {
+    db.prepare(`UPDATE characters SET clubs = ?, quidditch_position = NULL, updated_at = datetime('now') WHERE id = ?`).run(
+      JSON.stringify(list),
+      characterId
+    );
+  } else {
+    db.prepare(`UPDATE characters SET clubs = ?, updated_at = datetime('now') WHERE id = ?`).run(
+      JSON.stringify(list),
+      characterId
+    );
+  }
+  return serializeCharacter(getCharacterById(characterId)!);
+}
+
+export function setQuidditchPosition(characterId: number, position: QuidditchPosition) {
+  const character = getCharacterById(characterId)!;
+  const memberClubs: string[] = JSON.parse(character.clubs);
+  if (!memberClubs.includes("quidditch")) throw new Error("Сначала нужно вступить в квиддичную команду");
+  if (!QUIDDITCH_POSITIONS.includes(position)) throw new Error("Неизвестная позиция");
+  db.prepare(`UPDATE characters SET quidditch_position = ?, updated_at = datetime('now') WHERE id = ?`).run(
+    position,
     characterId
   );
   return serializeCharacter(getCharacterById(characterId)!);

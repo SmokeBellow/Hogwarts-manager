@@ -457,6 +457,35 @@ input::placeholder {
   gap: 10px;
 }
 
+.position-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.position-btn {
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--parchment);
+  border: 1px solid var(--border-glow);
+  border-radius: 6px;
+  padding: 8px 6px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.position-btn:hover {
+  border-color: var(--brass-lit);
+}
+
+.position-btn.active {
+  background: linear-gradient(180deg, var(--brass-lit), var(--brass));
+  color: var(--void-deep);
+  border-color: rgba(255, 235, 180, 0.6);
+  font-weight: 600;
+}
+
 .pill {
   display: inline-block;
   font-family: var(--font-ui);
@@ -518,6 +547,93 @@ input::placeholder {
   background: var(--brass-lit);
   border-radius: 3px;
   box-shadow: 0 0 8px rgba(230, 184, 105, 0.7);
+}
+
+.keeper-rings {
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  margin-top: 14px;
+}
+
+.keeper-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+  border: 4px solid var(--brass-dim);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.keeper-ring:disabled {
+  cursor: default;
+}
+
+.keeper-ring.active {
+  border-color: var(--brass-lit);
+  box-shadow: 0 0 18px 4px rgba(230, 184, 105, 0.75), inset 0 1px 4px rgba(0, 0, 0, 0.7);
+  transform: scale(1.06);
+}
+
+.reflex-field {
+  position: relative;
+  height: 220px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(76, 122, 74, 0.12), rgba(0, 0, 0, 0.25));
+  border: 1px solid var(--border-glow);
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.reflex-target {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fdf0c8, var(--brass-lit) 55%, var(--brass) 100%);
+  box-shadow: 0 0 14px 3px rgba(230, 184, 105, 0.8);
+  border: none;
+  cursor: pointer;
+}
+
+.combo-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.combo-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--stone-deep);
+  border: 1px solid var(--brass-dim);
+}
+
+.combo-dot.hit {
+  background: var(--success);
+  border-color: var(--success);
+  box-shadow: 0 0 6px rgba(76, 122, 74, 0.8);
+}
+
+.combo-dot.miss {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.combo-btn {
+  margin-top: 14px;
+  width: 100%;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.combo-btn.active {
+  box-shadow: 0 0 18px 4px rgba(230, 184, 105, 0.6);
+  transform: scale(1.02);
 }
 
 .spell-canvas {

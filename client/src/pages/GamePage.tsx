@@ -85,7 +85,13 @@ export function GamePage({
 
       {event && (
         <div style={{ marginTop: 16 }}>
-          <EventPanel key={event.id} event={event} spellTemplates={spellTemplates} onResolved={handleResolved} />
+          <EventPanel
+            key={event.id}
+            event={event}
+            spellTemplates={spellTemplates}
+            character={character}
+            onResolved={handleResolved}
+          />
         </div>
       )}
       {!event && checkingWeek && (

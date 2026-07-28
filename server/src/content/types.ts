@@ -64,7 +64,12 @@ export interface GameEvent {
   choices: EventChoice[];
   minYear?: number; // event only appears from this school year onward, default 1
   requiresClub?: string; // event only appears if the character has joined this club
+  excludesClub?: string; // event only appears if the character has NOT joined this club
   guaranteed?: boolean; // wins over overlapping non-guaranteed events for the same week
+  // Groups events that should reuse the same random NPC name for a given
+  // character (e.g. the same crush appearing across two separate events).
+  // Defaults to the event's own id when omitted.
+  nameSeedKey?: string;
 }
 
 export interface Club {

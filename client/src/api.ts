@@ -54,6 +54,11 @@ export const api = {
     request<{ character: any }>("/game/clubs/join", { method: "POST", body: JSON.stringify({ clubId }) }),
   leaveClub: (clubId: string) =>
     request<{ character: any }>("/game/clubs/leave", { method: "POST", body: JSON.stringify({ clubId }) }),
+  setQuidditchPosition: (position: string) =>
+    request<{ character: any }>("/game/clubs/quidditch-position", {
+      method: "POST",
+      body: JSON.stringify({ position }),
+    }),
   buyPet: (petId: string) =>
     request<{ character: any }>("/game/pets/buy", { method: "POST", body: JSON.stringify({ petId }) }),
   getExamQuestions: () => request<{ questions: any[] }>("/game/exam/questions"),

@@ -20,6 +20,8 @@ import {
   advanceWeek,
   joinClub,
   leaveClub,
+  setQuidditchPosition,
+  QUIDDITCH_POSITIONS,
   buyPet,
   getExamQuestions,
   submitExamAnswers,
@@ -145,6 +147,20 @@ gameRouter.post("/clubs/leave", (req: AuthedRequest, res) => {
   const parsed = clubSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Некорректные данные" });
   res.json({ character: leaveClub(character.id, parsed.data.clubId) });
+});
+
+const quidditchPositionSchema = z.object({ position: z.enum(QUIDDITCH_POSITIONS) });
+
+gameRouter.post("/clubs/quidditch-position", (req: AuthedRequest, res) => {
+  const character = ownedCharacterOr404(req, res);
+  if (!character) return;
+  const parsed = quidditchPositionSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "Некорректные данные" });
+  try {
+    res.json({ character: setQuidditchPosition(character.id, parsed.data.position) });
+  } catch (e) {
+    res.status(400).json({ error: (e as Error).message });
+  }
 });
 
 const petSchema = z.object({ petId: z.string() });

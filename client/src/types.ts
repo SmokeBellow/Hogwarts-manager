@@ -8,6 +8,8 @@ export interface Stats {
   charm: number;
 }
 
+export type QuidditchPosition = "keeper" | "chaser" | "beater" | "seeker";
+
 export interface Character {
   id: number;
   name: string;
@@ -25,6 +27,7 @@ export interface Character {
   pet: { id: string; name: string } | null;
   housePoints: number;
   status: string;
+  quidditchPosition: QuidditchPosition | null;
 }
 
 export interface Backstory {

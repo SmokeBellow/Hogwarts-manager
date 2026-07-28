@@ -1,23 +1,22 @@
 import { useState } from "react";
-import type { GameEvent, SpellTemplate } from "../types";
+import type { Character, GameEvent, SpellTemplate } from "../types";
 import { api } from "../api";
 import { SpellDrawCanvas } from "./SpellDrawCanvas";
 import { TimingMinigame } from "./TimingMinigame";
+import { KeeperRingsMinigame } from "./KeeperRingsMinigame";
+import { SeekerReflexMinigame } from "./SeekerReflexMinigame";
+import { ChaserComboMinigame } from "./ChaserComboMinigame";
 
 interface Props {
   event: GameEvent;
   spellTemplates: SpellTemplate[];
+  character: Character;
   onResolved: (character: any) => void;
 }
 
 type Stage = "choosing" | "spell" | "minigame" | "outcome";
 
 const MINIGAME_THEMES: Record<string, { title: string; description: string; actionLabel: string }> = {
-  quidditch: {
-    title: "Погоня за снитчем",
-    description: "Лови момент и жми в тот миг, когда рука окажется у самой цели.",
-    actionLabel: "Поймать снитч!",
-  },
   gobstones: {
     title: "Точный бросок",
     description: "Дождись, когда бросок будет наиболее точным, и жми в нужный момент.",
@@ -25,7 +24,7 @@ const MINIGAME_THEMES: Record<string, { title: string; description: string; acti
   },
 };
 
-export function EventPanel({ event, spellTemplates, onResolved }: Props) {
+export function EventPanel({ event, spellTemplates, character, onResolved }: Props) {
   const [stage, setStage] = useState<Stage>("choosing");
   const [pendingChoiceId, setPendingChoiceId] = useState<string | null>(null);
   const [challengeSuccess, setChallengeSuccess] = useState<boolean | null>(null);
@@ -59,7 +58,44 @@ export function EventPanel({ event, spellTemplates, onResolved }: Props) {
 
   const pendingChoice = pendingChoiceId ? event.choices.find((c) => c.id === pendingChoiceId) : null;
   const currentSpell = pendingChoice ? spellTemplates.find((s) => s.id === pendingChoice.spellId) : null;
-  const minigameTheme = pendingChoice?.minigameId ? MINIGAME_THEMES[pendingChoice.minigameId] : null;
+
+  const renderMinigame = () => {
+    if (!pendingChoice?.minigameId) return null;
+    const onResult = (success: boolean) => setChallengeSuccess(success);
+    if (pendingChoice.minigameId === "quidditch") {
+      switch (character.quidditchPosition) {
+        case "keeper":
+          return <KeeperRingsMinigame onResult={onResult} />;
+        case "seeker":
+          return <SeekerReflexMinigame onResult={onResult} />;
+        case "chaser":
+          return <ChaserComboMinigame onResult={onResult} />;
+        case "beater":
+          return (
+            <TimingMinigame
+              title="Отбить бладжер"
+              description="Дождись, когда бладжер окажется в зоне удара, и бей точно в этот миг."
+              actionLabel="Отбить!"
+              onResult={onResult}
+            />
+          );
+        default:
+          return (
+            <TimingMinigame
+              title="Погоня за снитчем"
+              description="Лови момент и жми в тот миг, когда рука окажется у самой цели."
+              actionLabel="Поймать снитч!"
+              onResult={onResult}
+            />
+          );
+      }
+    }
+    const theme = MINIGAME_THEMES[pendingChoice.minigameId];
+    if (!theme) return null;
+    return (
+      <TimingMinigame title={theme.title} description={theme.description} actionLabel={theme.actionLabel} onResult={onResult} />
+    );
+  };
 
   return (
     <div className="parchment-card event-panel question-card">
@@ -107,14 +143,9 @@ export function EventPanel({ event, spellTemplates, onResolved }: Props) {
         </>
       )}
 
-      {stage === "minigame" && minigameTheme && pendingChoiceId && (
+      {stage === "minigame" && pendingChoiceId && (
         <>
-          <TimingMinigame
-            title={minigameTheme.title}
-            description={minigameTheme.description}
-            actionLabel={minigameTheme.actionLabel}
-            onResult={(success) => setChallengeSuccess(success)}
-          />
+          {renderMinigame()}
           <button
             className="btn btn-primary"
             style={{ marginTop: 16 }}

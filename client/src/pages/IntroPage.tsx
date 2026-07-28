@@ -125,6 +125,7 @@ export function IntroPage({ character: initialCharacter, pets, spellTemplates, o
           <EventPanel
             event={event}
             spellTemplates={spellTemplates}
+            character={character}
             onResolved={(updated) => {
               setCharacter(updated);
               setStep("arrival");

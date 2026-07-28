@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS characters (
   house_points INTEGER NOT NULL DEFAULT 0,
   seen_events TEXT NOT NULL DEFAULT '[]',
   status TEXT NOT NULL DEFAULT 'active',
+  quidditch_position TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -67,3 +68,10 @@ CREATE TABLE IF NOT EXISTS exam_results (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 `);
+
+// Migration for databases created before quidditch_position existed.
+try {
+  db.exec(`ALTER TABLE characters ADD COLUMN quidditch_position TEXT`);
+} catch {
+  // column already exists
+}
