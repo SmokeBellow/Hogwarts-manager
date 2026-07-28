@@ -631,3 +631,100 @@ input::placeholder {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Hogwarts letter animation ---------- */
+
+.envelope-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0 8px;
+  margin: 0 auto;
+  animation: owl-fly-in 1s ease-out;
+}
+
+.envelope-owl {
+  display: inline-block;
+  font-size: 4rem;
+  animation: owl-bob 2.2s ease-in-out infinite;
+}
+
+.envelope-icon {
+  display: inline-block;
+  font-size: 2.4rem;
+  margin-top: -14px;
+  animation: seal-glow 1.8s ease-in-out infinite;
+}
+
+@keyframes owl-fly-in {
+  from {
+    transform: translateX(-160%) translateY(-40px) rotate(-18deg);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes owl-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes seal-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px rgba(230, 184, 105, 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(230, 184, 105, 0.85));
+  }
+}
+
+.letter-reveal {
+  animation: letter-reveal-in 0.5s ease;
+}
+
+@keyframes letter-reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Sticky call-to-action ---------- */
+
+.sticky-cta {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(13, 10, 7, 0) 0%, rgba(13, 10, 7, 0.9) 35%, rgba(13, 10, 7, 0.98) 100%);
+  z-index: 40;
+  pointer-events: none;
+}
+
+.sticky-cta-btn {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 460px;
+  padding: 14px 20px;
+  font-size: 1.05rem;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(230, 184, 105, 0.25);
+}

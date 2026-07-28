@@ -1,17 +1,23 @@
 import { useState } from "react";
 import type { Backstory } from "../types";
 import { api } from "../api";
+import { useScrollTop } from "../useScrollTop";
 
 interface Props {
   backstories: Backstory[];
   onCreated: (character: any) => void;
 }
 
+type Step = "name" | "letter" | "backstory";
+
 export function CreateCharacterPage({ backstories, onCreated }: Props) {
+  const [step, setStep] = useState<Step>("name");
   const [name, setName] = useState("");
+  const [letterOpened, setLetterOpened] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  useScrollTop(step);
 
   const submit = async () => {
     if (!name.trim() || !selected) return;
@@ -27,48 +33,125 @@ export function CreateCharacterPage({ backstories, onCreated }: Props) {
     }
   };
 
-  return (
-    <div className="app-shell">
-      <div className="panel">
-        <h1>Письмо из Хогвартса</h1>
-        <p>Прежде чем ты взойдёшь на борт Хогвартс-экспресса, расскажи немного о себе.</p>
-        <input
-          placeholder="Имя твоего персонажа"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={{ width: "100%", marginTop: 12 }}
-          maxLength={40}
-        />
-        <h2 style={{ marginTop: 24 }}>Выбери предысторию</h2>
-        <div className="card-grid" style={{ marginTop: 12 }}>
-          {backstories.map((b) => (
-            <button
-              key={b.id}
-              onClick={() => setSelected(b.id)}
-              className="item-card"
-              style={{
-                border: selected === b.id ? "2px solid var(--brass-lit)" : undefined,
-                textAlign: "left",
+  if (step === "name") {
+    return (
+      <div className="app-shell">
+        <div className="center-screen" style={{ minHeight: "70vh" }}>
+          <div className="parchment-card question-card" style={{ textAlign: "center", maxWidth: 480, width: "100%" }}>
+            <h1 style={{ marginTop: 0 }}>Как тебя зовут?</h1>
+            <p>Прежде чем сова принесёт письмо из Хогвартса, назови своё имя.</p>
+            <input
+              placeholder="Имя твоего персонажа"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && name.trim()) setStep("letter");
               }}
+              style={{ width: "100%", marginTop: 16 }}
+              maxLength={40}
+              autoFocus
+            />
+            <button
+              className="btn btn-primary"
+              style={{ marginTop: 20 }}
+              disabled={!name.trim()}
+              onClick={() => setStep("letter")}
             >
-              <span className="avatar-placeholder">{b.icon}</span>
-              <strong className="display" style={{ color: "var(--brass-lit)" }}>
-                {b.title}
-              </strong>
-              <span style={{ fontSize: "0.92rem" }}>{b.description}</span>
+              Отправить сову
             </button>
-          ))}
+          </div>
         </div>
-        {error && <p className="error-text">{error}</p>}
-        <button
-          className="btn btn-primary"
-          style={{ marginTop: 24 }}
-          disabled={!name.trim() || !selected || loading}
-          onClick={submit}
-        >
-          Отправиться в Хогвартс
-        </button>
       </div>
+    );
+  }
+
+  if (step === "letter") {
+    return (
+      <div className="app-shell">
+        <div className="center-screen" style={{ minHeight: "70vh" }}>
+          <div className="parchment-card question-card" style={{ textAlign: "center", maxWidth: 520, width: "100%" }}>
+            {!letterOpened ? (
+              <>
+                <h1 style={{ marginTop: 0 }}>Сова в пути...</h1>
+                <button
+                  className="envelope-btn"
+                  onClick={() => setLetterOpened(true)}
+                  aria-label="Открыть письмо"
+                >
+                  <span className="envelope-owl">🦉</span>
+                  <span className="envelope-icon">✉️</span>
+                </button>
+                <p className="text-muted" style={{ marginTop: 12 }}>Нажми на письмо, чтобы его открыть</p>
+              </>
+            ) : (
+              <div className="letter-reveal">
+                <h1 style={{ marginTop: 0 }}>Школа чародейства и волшебства «Хогвартс»</h1>
+                <div style={{ textAlign: "left" }}>
+                  <p>Дорог{name.trim().endsWith("а") ? "ая" : "ой"} {name.trim()}!</p>
+                  <p>
+                    Мы рады проинформировать тебя, что тебе предоставлено место в Школе чародейства и волшебства
+                    «Хогвартс». Приложен список необходимых книг и снаряжения.
+                  </p>
+                  <p>
+                    Ждём твою сову не позднее 31 июля.
+                    <br />
+                    Искренне твоя,
+                    <br />
+                    Минерва МакГонагалл,
+                    <br />
+                    заместитель директора
+                  </p>
+                </div>
+                <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setStep("backstory")}>
+                  Читать дальше
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="app-shell" style={{ paddingBottom: selected ? 100 : undefined }}>
+      <div className="panel">
+        <h1 style={{ marginTop: 0 }}>Выбери предысторию</h1>
+        <p className="text-muted">Нажми на карточку, чтобы прочитать её и выбрать.</p>
+        <div className="card-grid" style={{ marginTop: 12 }}>
+          {backstories.map((b) => {
+            const isSelected = selected === b.id;
+            return (
+              <button
+                key={b.id}
+                onClick={() => setSelected(isSelected ? null : b.id)}
+                className="item-card"
+                style={{
+                  border: isSelected ? "2px solid var(--brass-lit)" : undefined,
+                  textAlign: "left",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span className="avatar-placeholder">{b.icon}</span>
+                  <strong className="display" style={{ color: "var(--brass-lit)" }}>
+                    {b.title}
+                  </strong>
+                </div>
+                {isSelected && <span style={{ fontSize: "0.92rem", marginTop: 4 }}>{b.description}</span>}
+              </button>
+            );
+          })}
+        </div>
+        {error && <p className="error-text" style={{ marginTop: 16 }}>{error}</p>}
+      </div>
+
+      {selected && (
+        <div className="sticky-cta">
+          <button className="btn btn-primary sticky-cta-btn" disabled={loading} onClick={submit}>
+            Отправиться в Хогвартс
+          </button>
+        </div>
+      )}
     </div>
   );
 }

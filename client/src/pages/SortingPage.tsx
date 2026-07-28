@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { SortingQuestion } from "../types";
 import { api } from "../api";
+import { useScrollTop } from "../useScrollTop";
 
 interface Props {
   onSorted: (house: string, character: any) => void;
@@ -11,6 +12,7 @@ export function SortingPage({ onSorted }: Props) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  useScrollTop(step);
 
   useEffect(() => {
     api.getSortingQuestions().then((res) => setQuestions(res.questions));

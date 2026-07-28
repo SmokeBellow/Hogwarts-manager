@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Character, Club, GameEvent, LectureTopic, Pet, SpellTemplate, Subject } from "../types";
 import { api } from "../api";
+import { useScrollTop } from "../useScrollTop";
 import { StatsPanel } from "../components/StatsPanel";
 import { ClubsPanel } from "../components/ClubsPanel";
 import { PetsPanel } from "../components/PetsPanel";
@@ -33,6 +34,7 @@ export function GamePage({
   const [tab, setTab] = useState<Tab>("overview");
   const [event, setEvent] = useState<GameEvent | null>(null);
   const [checkingWeek, setCheckingWeek] = useState(true);
+  useScrollTop(tab);
 
   const refreshEvent = useCallback(async () => {
     setCheckingWeek(true);

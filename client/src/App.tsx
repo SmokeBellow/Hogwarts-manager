@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { useAuth } from "./AuthContext";
+import { useScrollTop } from "./useScrollTop";
 import { api } from "./api";
 import { AuthPage } from "./pages/AuthPage";
 import { CreateCharacterPage } from "./pages/CreateCharacterPage";
@@ -51,6 +52,8 @@ function App() {
       );
     }
   }, [character?.phase, examResults]);
+
+  useScrollTop(token, character === undefined, !character, !!justSortedHouse, character?.phase, introDone);
 
   if (!token) return <AuthPage />;
 

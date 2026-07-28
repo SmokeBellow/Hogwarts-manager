@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Character, GameEvent, Pet, SpellTemplate } from "../types";
 import { api } from "../api";
+import { useScrollTop } from "../useScrollTop";
 import { EventPanel } from "../components/EventPanel";
 
 type Step = "diagon" | "platform" | "express" | "arrival";
@@ -17,6 +18,7 @@ export function IntroPage({ character: initialCharacter, pets, spellTemplates, o
   const [character, setCharacter] = useState(initialCharacter);
   const [event, setEvent] = useState<GameEvent | null>(null);
   const [petError, setPetError] = useState<string | null>(null);
+  useScrollTop(step);
 
   useEffect(() => {
     if (step === "express" && !event) {
