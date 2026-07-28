@@ -18,6 +18,7 @@ export function IntroPage({ character: initialCharacter, pets, spellTemplates, o
   const [character, setCharacter] = useState(initialCharacter);
   const [event, setEvent] = useState<GameEvent | null>(null);
   const [petError, setPetError] = useState<string | null>(null);
+  const [expandedPetId, setExpandedPetId] = useState<string | null>(null);
   useScrollTop(step);
 
   useEffect(() => {
@@ -54,18 +55,38 @@ export function IntroPage({ character: initialCharacter, pets, spellTemplates, o
             <>
               {petError && <p className="error-text">{petError}</p>}
               <div className="card-grid" style={{ marginTop: 12 }}>
-                {pets.map((pet) => (
-                  <div className="item-card" key={pet.id}>
-                    <span className="avatar-placeholder">{pet.icon}</span>
-                    <strong className="display" style={{ color: "var(--brass-lit)" }}>
-                      {pet.name}
-                    </strong>
-                    <span style={{ fontSize: "0.9rem" }}>{pet.description}</span>
-                    <button className="btn btn-primary" onClick={() => buyPet(pet.id)}>
-                      Выбрать
-                    </button>
-                  </div>
-                ))}
+                {pets.map((pet) => {
+                  const isExpanded = expandedPetId === pet.id;
+                  return (
+                    <div
+                      key={pet.id}
+                      className="item-card"
+                      style={{ textAlign: "left", cursor: "pointer" }}
+                      onClick={() => setExpandedPetId(isExpanded ? null : pet.id)}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <span className="avatar-placeholder">{pet.icon}</span>
+                        <strong className="display" style={{ color: "var(--brass-lit)" }}>
+                          {pet.name}
+                        </strong>
+                      </div>
+                      {isExpanded && (
+                        <>
+                          <span style={{ fontSize: "0.9rem", marginTop: 4 }}>{pet.description}</span>
+                          <button
+                            className="btn btn-primary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              buyPet(pet.id);
+                            }}
+                          >
+                            Выбрать
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </>
           )}
