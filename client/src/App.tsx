@@ -10,6 +10,7 @@ import { SortingPage } from "./pages/SortingPage";
 import { GamePage } from "./pages/GamePage";
 import { ExamPage } from "./pages/ExamPage";
 import { ResultsPage } from "./pages/ResultsPage";
+import { GraduationPage } from "./pages/GraduationPage";
 import type { Character, ExamResult } from "./types";
 
 interface StaticData {
@@ -19,6 +20,7 @@ interface StaticData {
   pets: any[];
   spellTemplates: any[];
   lectureTopics: any[];
+  maxYear: number;
 }
 
 function App() {
@@ -135,7 +137,22 @@ function App() {
     if (!examResults) {
       return <div className="center-screen">Подводим итоги года...</div>;
     }
-    return <ResultsPage results={examResults} character={character} subjects={staticData.subjects} />;
+    return (
+      <ResultsPage
+        results={examResults}
+        character={character}
+        subjects={staticData.subjects}
+        maxYear={staticData.maxYear}
+        onContinue={(char) => {
+          setExamResults(null);
+          setCharacter(char);
+        }}
+      />
+    );
+  }
+
+  if (character.phase === "graduated") {
+    return <GraduationPage character={character} subjects={staticData.subjects} />;
   }
 
   return <div className="center-screen">Хогвартс готовится к новому дню...</div>;

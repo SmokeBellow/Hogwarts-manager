@@ -22,10 +22,12 @@ import {
   leaveClub,
   setQuidditchPosition,
   QUIDDITCH_POSITIONS,
+  MAX_YEAR,
   buyPet,
   getExamQuestions,
   submitExamAnswers,
   getExamResults,
+  advanceYear,
   studyTopic,
 } from "../game/engine.js";
 
@@ -42,7 +44,7 @@ function ownedCharacterOr404(req: AuthedRequest, res: import("express").Response
 }
 
 gameRouter.get("/static", (_req, res) => {
-  res.json({ backstories, subjects, clubs, pets, spellTemplates, lectureTopics });
+  res.json({ backstories, subjects, clubs, pets, spellTemplates, lectureTopics, maxYear: MAX_YEAR });
 });
 
 gameRouter.get("/character", (req: AuthedRequest, res) => {
@@ -205,6 +207,16 @@ gameRouter.get("/exam/results", (req: AuthedRequest, res) => {
   const character = ownedCharacterOr404(req, res);
   if (!character) return;
   res.json({ results: getExamResults(character.id) });
+});
+
+gameRouter.post("/year/advance", (req: AuthedRequest, res) => {
+  const character = ownedCharacterOr404(req, res);
+  if (!character) return;
+  try {
+    res.json({ character: advanceYear(character.id) });
+  } catch (e) {
+    res.status(400).json({ error: (e as Error).message });
+  }
 });
 
 const studySchema = z.object({ topicId: z.string() });

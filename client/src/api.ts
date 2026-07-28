@@ -68,6 +68,7 @@ export const api = {
       body: JSON.stringify({ answers }),
     }),
   getExamResults: () => request<{ results: any[] }>("/game/exam/results"),
+  advanceYear: () => request<{ character: any }>("/game/year/advance", { method: "POST" }),
   study: (topicId: string) =>
     request<{ studiedTopics: string[] }>("/game/study", { method: "POST", body: JSON.stringify({ topicId }) }),
 };

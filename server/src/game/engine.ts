@@ -444,6 +444,26 @@ export function getExamResults(characterId: number) {
     .all(characterId);
 }
 
+export const MAX_YEAR = 7;
+
+export function advanceYear(characterId: number) {
+  const character = getCharacterById(characterId);
+  if (!character) throw new Error("Персонаж не найден");
+  if (character.phase !== "results") throw new Error("Год ещё не завершён");
+
+  if (character.year >= MAX_YEAR) {
+    db.prepare(`UPDATE characters SET phase = 'graduated', status = 'graduated', updated_at = datetime('now') WHERE id = ?`).run(
+      characterId
+    );
+  } else {
+    db.prepare(
+      `UPDATE characters SET year = year + 1, week = 1, phase = 'year', seen_events = '[]', updated_at = datetime('now') WHERE id = ?`
+    ).run(characterId);
+  }
+
+  return serializeCharacter(getCharacterById(characterId)!);
+}
+
 export function studyTopic(characterId: number, topicId: string) {
   const character = getCharacterById(characterId)!;
   const studied: string[] = JSON.parse(character.studied_topics);

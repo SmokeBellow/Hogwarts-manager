@@ -18,7 +18,7 @@ export interface Character {
   year: number;
   week: number;
   totalWeeks: number;
-  phase: "sorting" | "year" | "exam" | "results";
+  phase: "sorting" | "year" | "exam" | "results" | "graduated";
   stats: Stats;
   grades: Record<string, number>;
   friends: { name: string; level: number }[];

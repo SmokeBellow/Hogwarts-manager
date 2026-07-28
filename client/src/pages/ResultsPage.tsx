@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { Character, ExamResult, Subject } from "../types";
+import { api } from "../api";
 
 const GRADE_NAMES: Record<string, string> = {
   O: "Выше ожидаемого (O)",
@@ -13,13 +15,29 @@ export function ResultsPage({
   results,
   character,
   subjects,
+  maxYear,
+  onContinue,
 }: {
   results: ExamResult[];
   character: Character;
   subjects: Subject[];
+  maxYear: number;
+  onContinue: (character: Character) => void;
 }) {
   const subjectName = (id: string) => subjects.find((s) => s.id === id)?.name ?? id;
   const passed = results.filter((r) => r.gradeLetter !== "T").length;
+  const isFinalYear = character.year >= maxYear;
+  const [loading, setLoading] = useState(false);
+
+  const continueYear = async () => {
+    setLoading(true);
+    try {
+      const res = await api.advanceYear();
+      onContinue(res.character);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="app-shell">
@@ -44,11 +62,17 @@ export function ResultsPage({
             {character.friends.length}
             {character.relationship ? `, а сердце занято — отношения с ${character.relationship.name}.` : "."}
           </p>
-          <p className="text-muted">
-            Переход на следующий курс, продолжение сюжета и выбор профессии после выпуска — в разработке. Первый курс
-            пройден полностью!
-          </p>
+          {isFinalYear ? (
+            <p className="text-muted">Седьмой курс позади — впереди выпускной вечер в Большом зале.</p>
+          ) : (
+            <p className="text-muted">
+              Летние каникулы позади — пора возвращаться в Хогвартс-экспресс и начинать {character.year + 1}-й курс.
+            </p>
+          )}
         </div>
+        <button className="btn btn-primary" style={{ marginTop: 20, width: "100%" }} disabled={loading} onClick={continueYear}>
+          {isFinalYear ? "Закончить Хогвартс" : `Перейти на ${character.year + 1}-й курс`}
+        </button>
       </div>
     </div>
   );
