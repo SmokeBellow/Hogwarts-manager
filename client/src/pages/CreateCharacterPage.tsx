@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Backstory } from "../types";
 import { api } from "../api";
 import { useScrollTop } from "../useScrollTop";
+import { generateRandomName } from "../nameGenerator";
 
 interface Props {
   backstories: Backstory[];
@@ -52,8 +53,16 @@ export function CreateCharacterPage({ backstories, onCreated }: Props) {
               autoFocus
             />
             <button
+              className="btn"
+              style={{ marginTop: 10, width: "100%" }}
+              onClick={() => setName(generateRandomName())}
+              type="button"
+            >
+              🎲 Придумать имя случайно
+            </button>
+            <button
               className="btn btn-primary"
-              style={{ marginTop: 20 }}
+              style={{ marginTop: 12 }}
               disabled={!name.trim()}
               onClick={() => setStep("letter")}
             >
