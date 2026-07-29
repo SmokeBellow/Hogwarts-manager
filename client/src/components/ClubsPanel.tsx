@@ -65,22 +65,24 @@ export function ClubsPanel({
                       </strong>
                     </p>
                   ) : (
-                    <p className="text-muted" style={{ margin: "0 0 6px", fontSize: "0.88rem" }}>
-                      Выбери свою позицию в команде:
-                    </p>
+                    <>
+                      <p className="text-muted" style={{ margin: "0 0 6px", fontSize: "0.88rem" }}>
+                        Выбери свою позицию в команде — сменить её потом будет нельзя:
+                      </p>
+                      <div className="position-grid">
+                        {QUIDDITCH_POSITIONS.map((p) => (
+                          <button
+                            key={p.id}
+                            className="position-btn"
+                            title={p.description}
+                            onClick={() => choosePosition(p.id)}
+                          >
+                            {p.icon} {p.label}
+                          </button>
+                        ))}
+                      </div>
+                    </>
                   )}
-                  <div className="position-grid">
-                    {QUIDDITCH_POSITIONS.map((p) => (
-                      <button
-                        key={p.id}
-                        className={`position-btn ${character.quidditchPosition === p.id ? "active" : ""}`}
-                        title={p.description}
-                        onClick={() => choosePosition(p.id)}
-                      >
-                        {p.icon} {p.label}
-                      </button>
-                    ))}
-                  </div>
                 </div>
               )}
             </div>

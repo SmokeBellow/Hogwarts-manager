@@ -184,6 +184,7 @@ export function getCurrentEvent(characterId: number) {
       character.week <= e.weekMax &&
       !seen.includes(e.id) &&
       character.year >= (e.minYear ?? 1) &&
+      character.year <= (e.maxYear ?? Infinity) &&
       (!e.requiresClub || memberClubs.includes(e.requiresClub)) &&
       (!e.excludesClub || !memberClubs.includes(e.excludesClub))
   );
@@ -368,6 +369,7 @@ export function setQuidditchPosition(characterId: number, position: QuidditchPos
   const character = getCharacterById(characterId)!;
   const memberClubs: string[] = JSON.parse(character.clubs);
   if (!memberClubs.includes("quidditch")) throw new Error("Сначала нужно вступить в квиддичную команду");
+  if (character.quidditch_position) throw new Error("Позицию в команде уже нельзя изменить");
   if (!QUIDDITCH_POSITIONS.includes(position)) throw new Error("Неизвестная позиция");
   db.prepare(`UPDATE characters SET quidditch_position = ?, updated_at = datetime('now') WHERE id = ?`).run(
     position,
@@ -457,7 +459,7 @@ export function advanceYear(characterId: number) {
     );
   } else {
     db.prepare(
-      `UPDATE characters SET year = year + 1, week = 1, phase = 'year', seen_events = '[]', updated_at = datetime('now') WHERE id = ?`
+      `UPDATE characters SET year = year + 1, week = 1, phase = 'year', updated_at = datetime('now') WHERE id = ?`
     ).run(characterId);
   }
 

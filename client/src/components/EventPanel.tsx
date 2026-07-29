@@ -2,10 +2,8 @@ import { useState } from "react";
 import type { Character, GameEvent, SpellTemplate } from "../types";
 import { api } from "../api";
 import { SpellDrawCanvas } from "./SpellDrawCanvas";
-import { TimingMinigame } from "./TimingMinigame";
-import { KeeperRingsMinigame } from "./KeeperRingsMinigame";
-import { SeekerReflexMinigame } from "./SeekerReflexMinigame";
-import { ChaserComboMinigame } from "./ChaserComboMinigame";
+import { QuidditchMatchScene } from "./QuidditchMatchScene";
+import { GobstonesMinigame } from "./GobstonesMinigame";
 
 interface Props {
   event: GameEvent;
@@ -15,14 +13,6 @@ interface Props {
 }
 
 type Stage = "choosing" | "spell" | "minigame" | "outcome";
-
-const MINIGAME_THEMES: Record<string, { title: string; description: string; actionLabel: string }> = {
-  gobstones: {
-    title: "Точный бросок",
-    description: "Дождись, когда бросок будет наиболее точным, и жми в нужный момент.",
-    actionLabel: "Бросить!",
-  },
-};
 
 export function EventPanel({ event, spellTemplates, character, onResolved }: Props) {
   const [stage, setStage] = useState<Stage>("choosing");
@@ -63,38 +53,12 @@ export function EventPanel({ event, spellTemplates, character, onResolved }: Pro
     if (!pendingChoice?.minigameId) return null;
     const onResult = (success: boolean) => setChallengeSuccess(success);
     if (pendingChoice.minigameId === "quidditch") {
-      switch (character.quidditchPosition) {
-        case "keeper":
-          return <KeeperRingsMinigame onResult={onResult} />;
-        case "seeker":
-          return <SeekerReflexMinigame onResult={onResult} />;
-        case "chaser":
-          return <ChaserComboMinigame onResult={onResult} />;
-        case "beater":
-          return (
-            <TimingMinigame
-              title="Отбить бладжер"
-              description="Дождись, когда бладжер окажется в зоне удара, и бей точно в этот миг."
-              actionLabel="Отбить!"
-              onResult={onResult}
-            />
-          );
-        default:
-          return (
-            <TimingMinigame
-              title="Погоня за снитчем"
-              description="Лови момент и жми в тот миг, когда рука окажется у самой цели."
-              actionLabel="Поймать снитч!"
-              onResult={onResult}
-            />
-          );
-      }
+      return <QuidditchMatchScene position={character.quidditchPosition} onResult={onResult} />;
     }
-    const theme = MINIGAME_THEMES[pendingChoice.minigameId];
-    if (!theme) return null;
-    return (
-      <TimingMinigame title={theme.title} description={theme.description} actionLabel={theme.actionLabel} onResult={onResult} />
-    );
+    if (pendingChoice.minigameId === "gobstones") {
+      return <GobstonesMinigame onResult={onResult} />;
+    }
+    return null;
   };
 
   return (
@@ -146,14 +110,16 @@ export function EventPanel({ event, spellTemplates, character, onResolved }: Pro
       {stage === "minigame" && pendingChoiceId && (
         <>
           {renderMinigame()}
-          <button
-            className="btn btn-primary"
-            style={{ marginTop: 16 }}
-            disabled={challengeSuccess === null || loading}
-            onClick={() => resolve(pendingChoiceId, challengeSuccess ?? false)}
-          >
-            Продолжить
-          </button>
+          {challengeSuccess !== null && (
+            <button
+              className="btn btn-primary"
+              style={{ marginTop: 16 }}
+              disabled={loading}
+              onClick={() => resolve(pendingChoiceId, challengeSuccess ?? false)}
+            >
+              Продолжить
+            </button>
+          )}
         </>
       )}
 

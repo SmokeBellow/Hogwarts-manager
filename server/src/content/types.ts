@@ -63,6 +63,7 @@ export interface GameEvent {
   category: "academic" | "social" | "random" | "club";
   choices: EventChoice[];
   minYear?: number; // event only appears from this school year onward, default 1
+  maxYear?: number; // event only appears up to and including this school year, default unlimited
   requiresClub?: string; // event only appears if the character has joined this club
   excludesClub?: string; // event only appears if the character has NOT joined this club
   guaranteed?: boolean; // wins over overlapping non-guaranteed events for the same week
