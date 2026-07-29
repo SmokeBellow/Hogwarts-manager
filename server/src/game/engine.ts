@@ -7,6 +7,7 @@ import { pets } from "../content/pets.js";
 import { examQuestions } from "../content/examQuestions.js";
 import { npcNames } from "../content/npcNames.js";
 import type { NpcName } from "../content/npcNames.js";
+import { decrees } from "../content/decrees.js";
 import type { GameEvent, House, Stats, StatKey, EventOutcome } from "../content/types.js";
 
 function hashSeed(input: string): number {
@@ -33,13 +34,26 @@ function eventNeedsName(event: GameEvent): boolean {
 // "{g:masculine|feminine}" gender-agreement tokens (e.g. verb endings),
 // resolved against the picked NPC so text reads grammatically either way:
 // "Разговорить Розалинду" / "Разговорить Финеаса", "{name} реши{g:л|ла}".
-function applyNameTokens(text: string, npc: NpcName): string {
-  const withCase = text
+// A second character (e.g. two named story characters in one scene) can be
+// threaded through via "{name2}"/"{name2_acc}"/... and "{g2:masc|fem}".
+function applyNameTokens(text: string, npc: NpcName, npc2?: NpcName): string {
+  let result = text
     .replaceAll("{name_acc}", npc.accusative)
     .replaceAll("{name_gen}", npc.genitive)
     .replaceAll("{name_ins}", npc.instrumental)
     .replaceAll("{name}", npc.nominative);
-  return withCase.replace(/\{g:([^|}]*)\|([^}]*)\}/g, (_match, masc, fem) => (npc.gender === "f" ? fem : masc));
+  if (npc2) {
+    result = result
+      .replaceAll("{name2_acc}", npc2.accusative)
+      .replaceAll("{name2_gen}", npc2.genitive)
+      .replaceAll("{name2_ins}", npc2.instrumental)
+      .replaceAll("{name2}", npc2.nominative);
+  }
+  result = result.replace(/\{g:([^|}]*)\|([^}]*)\}/g, (_match, masc, fem) => (npc.gender === "f" ? fem : masc));
+  if (npc2) {
+    result = result.replace(/\{g2:([^|}]*)\|([^}]*)\}/g, (_match, masc, fem) => (npc2.gender === "f" ? fem : masc));
+  }
+  return result;
 }
 
 export interface CharacterRow {
@@ -63,6 +77,7 @@ export interface CharacterRow {
   seen_events: string;
   status: string;
   quidditch_position: string | null;
+  story_flags: string;
 }
 
 export const QUIDDITCH_POSITIONS = ["keeper", "chaser", "beater", "seeker"] as const;
@@ -97,6 +112,11 @@ export function serializeCharacter(row: CharacterRow) {
     housePoints: row.house_points,
     status: row.status,
     quidditchPosition: row.quidditch_position as QuidditchPosition | null,
+    decree: (() => {
+      const flags = JSON.parse(row.story_flags || "{}") as Record<string, string | boolean>;
+      const decreeId = flags.decree;
+      return typeof decreeId === "string" ? decrees.find((d) => d.id === decreeId) ?? null : null;
+    })(),
   };
 }
 
@@ -177,6 +197,7 @@ export function getCurrentEvent(characterId: number) {
   if (!character) throw new Error("Персонаж не найден");
   const seen: string[] = JSON.parse(character.seen_events);
   const memberClubs: string[] = JSON.parse(character.clubs);
+  const storyFlags: Record<string, string | boolean> = JSON.parse(character.story_flags || "{}");
 
   const matching = events.filter(
     (e) =>
@@ -186,7 +207,9 @@ export function getCurrentEvent(characterId: number) {
       character.year >= (e.minYear ?? 1) &&
       character.year <= (e.maxYear ?? Infinity) &&
       (!e.requiresClub || memberClubs.includes(e.requiresClub)) &&
-      (!e.excludesClub || !memberClubs.includes(e.excludesClub))
+      (!e.excludesClub || !memberClubs.includes(e.excludesClub)) &&
+      (!e.requiresFlag || !!storyFlags[e.requiresFlag]) &&
+      (!e.excludesFlag || !storyFlags[e.excludesFlag])
   );
   if (matching.length === 0) return null;
 
@@ -200,7 +223,8 @@ export function getCurrentEvent(characterId: number) {
   const candidate = pool[Math.floor(Math.random() * pool.length)];
 
   const npc = eventNeedsName(candidate) ? pickNpcName(characterId, candidate.nameSeedKey ?? candidate.id) : null;
-  const sub = (text: string) => (npc ? applyNameTokens(text, npc) : text);
+  const npc2 = candidate.nameSeedKey2 ? pickNpcName(characterId, candidate.nameSeedKey2) : undefined;
+  const sub = (text: string) => (npc ? applyNameTokens(text, npc, npc2) : text);
 
   return {
     id: candidate.id,
@@ -265,7 +289,8 @@ export function resolveEventChoice(
   const softenFactor = isBad ? 1 - effQuality * 0.5 : 1;
   const outcome: EventOutcome = isBad ? choice.badOutcome : choice.goodOutcome;
   const eventNpc = eventNeedsName(event) ? pickNpcName(characterId, event.nameSeedKey ?? event.id) : null;
-  const outcomeText = eventNpc ? applyNameTokens(outcome.text, eventNpc) : outcome.text;
+  const eventNpc2 = event.nameSeedKey2 ? pickNpcName(characterId, event.nameSeedKey2) : undefined;
+  const outcomeText = eventNpc ? applyNameTokens(outcome.text, eventNpc, eventNpc2) : outcome.text;
 
   const grades: Record<string, number> = JSON.parse(character.grades);
   const friends: { name: string; level: number }[] = JSON.parse(character.friends);
@@ -309,11 +334,16 @@ export function resolveEventChoice(
     memberClubs.push(outcome.joinClub);
   }
 
+  const storyFlags: Record<string, string | boolean> = JSON.parse(character.story_flags || "{}");
+  if (outcome.setFlags) {
+    Object.assign(storyFlags, outcome.setFlags);
+  }
+
   const seen: string[] = JSON.parse(character.seen_events);
   seen.push(event.id);
 
   db.prepare(
-    `UPDATE characters SET stats = ?, grades = ?, friends = ?, relationship = ?, house_points = ?, clubs = ?, seen_events = ?, updated_at = datetime('now') WHERE id = ?`
+    `UPDATE characters SET stats = ?, grades = ?, friends = ?, relationship = ?, house_points = ?, clubs = ?, seen_events = ?, story_flags = ?, updated_at = datetime('now') WHERE id = ?`
   ).run(
     JSON.stringify(stats),
     JSON.stringify(grades),
@@ -322,6 +352,7 @@ export function resolveEventChoice(
     housePoints,
     JSON.stringify(memberClubs),
     JSON.stringify(seen),
+    JSON.stringify(storyFlags),
     characterId
   );
 

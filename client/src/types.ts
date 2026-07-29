@@ -28,6 +28,13 @@ export interface Character {
   housePoints: number;
   status: string;
   quidditchPosition: QuidditchPosition | null;
+  decree: Decree | null;
+}
+
+export interface Decree {
+  id: "loyalty" | "courage" | "justice" | "ambition";
+  title: string;
+  description: string;
 }
 
 export interface Backstory {

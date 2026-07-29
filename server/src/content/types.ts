@@ -39,6 +39,9 @@ export interface EventOutcome {
   relationshipDelta?: number;
   housePointsDelta?: number;
   joinClub?: string;
+  // Sets a persistent story flag on the character (see CharacterRow.story_flags).
+  // Used to thread the multi-year main-quest arc through gated event pairs.
+  setFlags?: Record<string, string | boolean>;
 }
 
 export interface EventChoice {
@@ -66,11 +69,16 @@ export interface GameEvent {
   maxYear?: number; // event only appears up to and including this school year, default unlimited
   requiresClub?: string; // event only appears if the character has joined this club
   excludesClub?: string; // event only appears if the character has NOT joined this club
+  requiresFlag?: string; // event only appears if this story flag is set (truthy)
+  excludesFlag?: string; // event only appears if this story flag is NOT set
   guaranteed?: boolean; // wins over overlapping non-guaranteed events for the same week
   // Groups events that should reuse the same random NPC name for a given
   // character (e.g. the same crush appearing across two separate events).
   // Defaults to the event's own id when omitted.
   nameSeedKey?: string;
+  // A second named character in the same scene (e.g. two story characters),
+  // filled in via "{name2}" tokens. See EventOutcome.setFlags docs for context.
+  nameSeedKey2?: string;
 }
 
 export interface Club {

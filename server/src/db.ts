@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS characters (
   seen_events TEXT NOT NULL DEFAULT '[]',
   status TEXT NOT NULL DEFAULT 'active',
   quidditch_position TEXT,
+  story_flags TEXT NOT NULL DEFAULT '{}',
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -69,9 +70,14 @@ CREATE TABLE IF NOT EXISTS exam_results (
 );
 `);
 
-// Migration for databases created before quidditch_position existed.
+// Migrations for databases created before these columns existed.
 try {
   db.exec(`ALTER TABLE characters ADD COLUMN quidditch_position TEXT`);
+} catch {
+  // column already exists
+}
+try {
+  db.exec(`ALTER TABLE characters ADD COLUMN story_flags TEXT NOT NULL DEFAULT '{}'`);
 } catch {
   // column already exists
 }

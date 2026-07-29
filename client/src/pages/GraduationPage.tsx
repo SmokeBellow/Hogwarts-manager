@@ -39,6 +39,28 @@ export function GraduationPage({ character, subjects }: { character: Character; 
           )}
           {character.pet && <p>Верный питомец всё это время: {character.pet.name}.</p>}
         </div>
+        {character.decree ? (
+          <div
+            className="panel"
+            style={{
+              marginTop: 16,
+              textAlign: "left",
+              color: "var(--parchment)",
+              border: "1px solid var(--brass)",
+              boxShadow: "0 0 20px rgba(230, 184, 105, 0.25)",
+            }}
+          >
+            <h3 style={{ marginTop: 0, color: "var(--brass-lit)" }}>Право основателей {character.decree.title}</h3>
+            <p style={{ margin: 0 }}>{character.decree.description}</p>
+          </div>
+        ) : (
+          <div className="panel" style={{ marginTop: 16, textAlign: "left", color: "var(--parchment-dim)" }}>
+            <p style={{ margin: 0 }}>
+              Где-то в замке до сих пор дремлет старое право основателей — то, что могло достаться тебе. В этот раз
+              оно так и осталось нетронутым.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
