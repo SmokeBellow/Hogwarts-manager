@@ -120,17 +120,20 @@ export function serializeCharacter(row: CharacterRow) {
   };
 }
 
-export function getCharacterForUser(userId: number): CharacterRow | undefined {
-  return db
-    .prepare(`SELECT * FROM characters WHERE user_id = ? ORDER BY id DESC LIMIT 1`)
-    .get(userId) as CharacterRow | undefined;
+export async function getCharacterForUser(userId: number): Promise<CharacterRow | undefined> {
+  const result = await db.execute({
+    sql: `SELECT * FROM characters WHERE user_id = ? ORDER BY id DESC LIMIT 1`,
+    args: [userId],
+  });
+  return result.rows[0] as unknown as CharacterRow | undefined;
 }
 
-export function getCharacterById(id: number): CharacterRow | undefined {
-  return db.prepare(`SELECT * FROM characters WHERE id = ?`).get(id) as CharacterRow | undefined;
+export async function getCharacterById(id: number): Promise<CharacterRow | undefined> {
+  const result = await db.execute({ sql: `SELECT * FROM characters WHERE id = ?`, args: [id] });
+  return result.rows[0] as unknown as CharacterRow | undefined;
 }
 
-export function createCharacter(userId: number, name: string, backstoryId: string): CharacterRow {
+export async function createCharacter(userId: number, name: string, backstoryId: string): Promise<CharacterRow> {
   const backstory = backstories.find((b) => b.id === backstoryId);
   if (!backstory) throw new Error("Неизвестная предыстория");
 
@@ -147,22 +150,21 @@ export function createCharacter(userId: number, name: string, backstoryId: strin
     }
   }
 
-  const info = db
-    .prepare(
-      `INSERT INTO characters (user_id, name, backstory_id, stats, grades)
-       VALUES (?, ?, ?, ?, ?)`
-    )
-    .run(userId, name, backstoryId, JSON.stringify(stats), JSON.stringify(grades));
+  const info = await db.execute({
+    sql: `INSERT INTO characters (user_id, name, backstory_id, stats, grades)
+       VALUES (?, ?, ?, ?, ?)`,
+    args: [userId, name, backstoryId, JSON.stringify(stats), JSON.stringify(grades)],
+  });
 
-  return getCharacterById(info.lastInsertRowid as number)!;
+  return (await getCharacterById(Number(info.lastInsertRowid)))!;
 }
 
 export function getSortingQuestionsList() {
   return sortingQuestions;
 }
 
-export function submitSorting(characterId: number, answers: { questionId: string; optionId: string }[]) {
-  const character = getCharacterById(characterId);
+export async function submitSorting(characterId: number, answers: { questionId: string; optionId: string }[]) {
+  const character = await getCharacterById(characterId);
   if (!character) throw new Error("Персонаж не найден");
   if (character.phase !== "sorting") throw new Error("Распределение уже завершено");
 
@@ -185,15 +187,16 @@ export function submitSorting(characterId: number, answers: { questionId: string
     }
   }
 
-  db.prepare(
-    `UPDATE characters SET house = ?, sorting_answers = ?, phase = 'year', week = 1, updated_at = datetime('now') WHERE id = ?`
-  ).run(winningHouse, JSON.stringify(answers), characterId);
+  await db.execute({
+    sql: `UPDATE characters SET house = ?, sorting_answers = ?, phase = 'year', week = 1, updated_at = datetime('now') WHERE id = ?`,
+    args: [winningHouse, JSON.stringify(answers), characterId],
+  });
 
   return { house: winningHouse, tally };
 }
 
-export function getCurrentEvent(characterId: number) {
-  const character = getCharacterById(characterId);
+export async function getCurrentEvent(characterId: number) {
+  const character = await getCharacterById(characterId);
   if (!character) throw new Error("Персонаж не найден");
   const seen: string[] = JSON.parse(character.seen_events);
   const memberClubs: string[] = JSON.parse(character.clubs);
@@ -242,16 +245,22 @@ export function getCurrentEvent(characterId: number) {
   };
 }
 
-export function advanceWeek(characterId: number) {
-  let character = getCharacterById(characterId);
+export async function advanceWeek(characterId: number): Promise<CharacterRow> {
+  let character = await getCharacterById(characterId);
   if (!character) throw new Error("Персонаж не найден");
   const nextWeek = character.week + 1;
-  db.prepare(`UPDATE characters SET week = ?, updated_at = datetime('now') WHERE id = ?`).run(nextWeek, characterId);
-  character = getCharacterById(characterId)!;
+  await db.execute({
+    sql: `UPDATE characters SET week = ?, updated_at = datetime('now') WHERE id = ?`,
+    args: [nextWeek, characterId],
+  });
+  character = (await getCharacterById(characterId))!;
 
   if (character.week > totalWeeksPerYear && character.phase === "year") {
-    db.prepare(`UPDATE characters SET phase = 'exam', updated_at = datetime('now') WHERE id = ?`).run(characterId);
-    character = getCharacterById(characterId)!;
+    await db.execute({
+      sql: `UPDATE characters SET phase = 'exam', updated_at = datetime('now') WHERE id = ?`,
+      args: [characterId],
+    });
+    character = (await getCharacterById(characterId))!;
   }
   return character;
 }
@@ -260,13 +269,13 @@ interface ResolveOptions {
   challengeSuccess?: boolean;
 }
 
-export function resolveEventChoice(
+export async function resolveEventChoice(
   characterId: number,
   eventId: string,
   choiceId: string,
   options: ResolveOptions = {}
 ) {
-  const character = getCharacterById(characterId);
+  const character = await getCharacterById(characterId);
   if (!character) throw new Error("Персонаж не найден");
   const event = events.find((e) => e.id === eventId);
   if (!event) throw new Error("Событие не найдено");
@@ -342,35 +351,37 @@ export function resolveEventChoice(
   const seen: string[] = JSON.parse(character.seen_events);
   seen.push(event.id);
 
-  db.prepare(
-    `UPDATE characters SET stats = ?, grades = ?, friends = ?, relationship = ?, house_points = ?, clubs = ?, seen_events = ?, story_flags = ?, updated_at = datetime('now') WHERE id = ?`
-  ).run(
-    JSON.stringify(stats),
-    JSON.stringify(grades),
-    JSON.stringify(friends),
-    relationship ? JSON.stringify(relationship) : null,
-    housePoints,
-    JSON.stringify(memberClubs),
-    JSON.stringify(seen),
-    JSON.stringify(storyFlags),
-    characterId
-  );
+  await db.execute({
+    sql: `UPDATE characters SET stats = ?, grades = ?, friends = ?, relationship = ?, house_points = ?, clubs = ?, seen_events = ?, story_flags = ?, updated_at = datetime('now') WHERE id = ?`,
+    args: [
+      JSON.stringify(stats),
+      JSON.stringify(grades),
+      JSON.stringify(friends),
+      relationship ? JSON.stringify(relationship) : null,
+      housePoints,
+      JSON.stringify(memberClubs),
+      JSON.stringify(seen),
+      JSON.stringify(storyFlags),
+      characterId,
+    ],
+  });
 
-  db.prepare(
-    `INSERT INTO event_log (character_id, year, week, event_id, choice_id, outcome_id, outcome_text, deltas)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-  ).run(
-    characterId,
-    character.year,
-    character.week,
-    event.id,
-    choice.id,
-    isBad ? "bad" : "good",
-    outcomeText,
-    JSON.stringify(outcome)
-  );
+  await db.execute({
+    sql: `INSERT INTO event_log (character_id, year, week, event_id, choice_id, outcome_id, outcome_text, deltas)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      characterId,
+      character.year,
+      character.week,
+      event.id,
+      choice.id,
+      isBad ? "bad" : "good",
+      outcomeText,
+      JSON.stringify(outcome),
+    ],
+  });
 
-  const updated = advanceWeek(characterId);
+  const updated = await advanceWeek(characterId);
 
   return {
     isBad,
@@ -379,54 +390,54 @@ export function resolveEventChoice(
   };
 }
 
-export function leaveClub(characterId: number, clubId: string) {
-  const character = getCharacterById(characterId)!;
+export async function leaveClub(characterId: number, clubId: string) {
+  const character = (await getCharacterById(characterId))!;
   const list: string[] = JSON.parse(character.clubs).filter((id: string) => id !== clubId);
   if (clubId === "quidditch") {
-    db.prepare(`UPDATE characters SET clubs = ?, quidditch_position = NULL, updated_at = datetime('now') WHERE id = ?`).run(
-      JSON.stringify(list),
-      characterId
-    );
+    await db.execute({
+      sql: `UPDATE characters SET clubs = ?, quidditch_position = NULL, updated_at = datetime('now') WHERE id = ?`,
+      args: [JSON.stringify(list), characterId],
+    });
   } else {
-    db.prepare(`UPDATE characters SET clubs = ?, updated_at = datetime('now') WHERE id = ?`).run(
-      JSON.stringify(list),
-      characterId
-    );
+    await db.execute({
+      sql: `UPDATE characters SET clubs = ?, updated_at = datetime('now') WHERE id = ?`,
+      args: [JSON.stringify(list), characterId],
+    });
   }
-  return serializeCharacter(getCharacterById(characterId)!);
+  return serializeCharacter((await getCharacterById(characterId))!);
 }
 
-export function setQuidditchPosition(characterId: number, position: QuidditchPosition) {
-  const character = getCharacterById(characterId)!;
+export async function setQuidditchPosition(characterId: number, position: QuidditchPosition) {
+  const character = (await getCharacterById(characterId))!;
   const memberClubs: string[] = JSON.parse(character.clubs);
   if (!memberClubs.includes("quidditch")) throw new Error("Сначала нужно вступить в квиддичную команду");
   if (character.quidditch_position) throw new Error("Позицию в команде уже нельзя изменить");
   if (!QUIDDITCH_POSITIONS.includes(position)) throw new Error("Неизвестная позиция");
-  db.prepare(`UPDATE characters SET quidditch_position = ?, updated_at = datetime('now') WHERE id = ?`).run(
-    position,
-    characterId
-  );
-  return serializeCharacter(getCharacterById(characterId)!);
+  await db.execute({
+    sql: `UPDATE characters SET quidditch_position = ?, updated_at = datetime('now') WHERE id = ?`,
+    args: [position, characterId],
+  });
+  return serializeCharacter((await getCharacterById(characterId))!);
 }
 
-export function buyPet(characterId: number, petId: string) {
+export async function buyPet(characterId: number, petId: string) {
   const pet = pets.find((p) => p.id === petId);
   if (!pet) throw new Error("Питомец не найден");
-  const character = getCharacterById(characterId)!;
+  const character = (await getCharacterById(characterId))!;
   if (character.pet) throw new Error("У тебя уже есть питомец");
-  db.prepare(`UPDATE characters SET pet = ?, updated_at = datetime('now') WHERE id = ?`).run(
-    JSON.stringify({ id: pet.id, name: pet.name }),
-    characterId
-  );
-  return serializeCharacter(getCharacterById(characterId)!);
+  await db.execute({
+    sql: `UPDATE characters SET pet = ?, updated_at = datetime('now') WHERE id = ?`,
+    args: [JSON.stringify({ id: pet.id, name: pet.name }), characterId],
+  });
+  return serializeCharacter((await getCharacterById(characterId))!);
 }
 
 export function getExamQuestions() {
   return examQuestions;
 }
 
-export function submitExamAnswers(characterId: number, answers: { questionId: string; optionIndex: number }[]) {
-  const character = getCharacterById(characterId);
+export async function submitExamAnswers(characterId: number, answers: { questionId: string; optionIndex: number }[]) {
+  const character = await getCharacterById(characterId);
   if (!character) throw new Error("Персонаж не найден");
   if (character.phase !== "exam") throw new Error("Экзамены ещё не начались");
 
@@ -449,15 +460,17 @@ export function submitExamAnswers(characterId: number, answers: { questionId: st
     const finalScore = clamp(Math.round(yearGrade * 0.6 + examScore * 0.4), 0, 100);
     const gradeLetter = toGradeLetter(finalScore);
     results.push({ subject: subject.id, score: finalScore, gradeLetter });
-    db.prepare(
-      `INSERT INTO exam_results (character_id, year, subject, score, grade_letter) VALUES (?, ?, ?, ?, ?)`
-    ).run(characterId, character.year, subject.id, finalScore, gradeLetter);
+    await db.execute({
+      sql: `INSERT INTO exam_results (character_id, year, subject, score, grade_letter) VALUES (?, ?, ?, ?, ?)`,
+      args: [characterId, character.year, subject.id, finalScore, gradeLetter],
+    });
     grades[subject.id] = finalScore;
   }
 
-  db.prepare(
-    `UPDATE characters SET grades = ?, phase = 'results', updated_at = datetime('now') WHERE id = ?`
-  ).run(JSON.stringify(grades), characterId);
+  await db.execute({
+    sql: `UPDATE characters SET grades = ?, phase = 'results', updated_at = datetime('now') WHERE id = ?`,
+    args: [JSON.stringify(grades), characterId],
+  });
 
   return results;
 }
@@ -471,39 +484,43 @@ function toGradeLetter(score: number): string {
   return "T";
 }
 
-export function getExamResults(characterId: number) {
-  return db
-    .prepare(`SELECT * FROM exam_results WHERE character_id = ? ORDER BY id DESC LIMIT 7`)
-    .all(characterId);
+export async function getExamResults(characterId: number) {
+  const result = await db.execute({
+    sql: `SELECT * FROM exam_results WHERE character_id = ? ORDER BY id DESC LIMIT 7`,
+    args: [characterId],
+  });
+  return result.rows;
 }
 
 export const MAX_YEAR = 7;
 
-export function advanceYear(characterId: number) {
-  const character = getCharacterById(characterId);
+export async function advanceYear(characterId: number) {
+  const character = await getCharacterById(characterId);
   if (!character) throw new Error("Персонаж не найден");
   if (character.phase !== "results") throw new Error("Год ещё не завершён");
 
   if (character.year >= MAX_YEAR) {
-    db.prepare(`UPDATE characters SET phase = 'graduated', status = 'graduated', updated_at = datetime('now') WHERE id = ?`).run(
-      characterId
-    );
+    await db.execute({
+      sql: `UPDATE characters SET phase = 'graduated', status = 'graduated', updated_at = datetime('now') WHERE id = ?`,
+      args: [characterId],
+    });
   } else {
-    db.prepare(
-      `UPDATE characters SET year = year + 1, week = 1, phase = 'year', updated_at = datetime('now') WHERE id = ?`
-    ).run(characterId);
+    await db.execute({
+      sql: `UPDATE characters SET year = year + 1, week = 1, phase = 'year', updated_at = datetime('now') WHERE id = ?`,
+      args: [characterId],
+    });
   }
 
-  return serializeCharacter(getCharacterById(characterId)!);
+  return serializeCharacter((await getCharacterById(characterId))!);
 }
 
-export function studyTopic(characterId: number, topicId: string) {
-  const character = getCharacterById(characterId)!;
+export async function studyTopic(characterId: number, topicId: string) {
+  const character = (await getCharacterById(characterId))!;
   const studied: string[] = JSON.parse(character.studied_topics);
   if (!studied.includes(topicId)) studied.push(topicId);
-  db.prepare(`UPDATE characters SET studied_topics = ?, updated_at = datetime('now') WHERE id = ?`).run(
-    JSON.stringify(studied),
-    characterId
-  );
+  await db.execute({
+    sql: `UPDATE characters SET studied_topics = ?, updated_at = datetime('now') WHERE id = ?`,
+    args: [JSON.stringify(studied), characterId],
+  });
   return studied;
 }

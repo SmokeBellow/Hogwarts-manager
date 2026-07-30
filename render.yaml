@@ -8,3 +8,10 @@ services:
     envVars:
       - key: JWT_SECRET
         generateValue: true
+      # Persistent database (e.g. a Turso libSQL database: "libsql://your-db.turso.io").
+      # Without this, data lives on Render's local disk and is wiped on every
+      # deploy/restart. Set the real values in the Render dashboard.
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_AUTH_TOKEN
+        sync: false

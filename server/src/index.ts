@@ -3,7 +3,7 @@ import cors from "cors";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import "./db.js";
+import { initDb } from "./db.js";
 import { authRouter } from "./routes/auth.js";
 import { gameRouter } from "./routes/game.js";
 
@@ -30,6 +30,13 @@ if (fs.existsSync(clientDist)) {
 }
 
 const port = process.env.PORT ? Number(process.env.PORT) : 4000;
-app.listen(port, () => {
-  console.log(`Hogwarts Manager server listening on port ${port}`);
-});
+initDb()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Hogwarts Manager server listening on port ${port}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to initialize database:", err);
+    process.exit(1);
+  });

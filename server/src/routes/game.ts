@@ -33,8 +33,8 @@ import {
 export const gameRouter = Router();
 gameRouter.use(requireAuth);
 
-function ownedCharacterOr404(req: AuthedRequest, res: import("express").Response) {
-  const character = getCharacterForUser(req.userId!);
+async function ownedCharacterOr404(req: AuthedRequest, res: import("express").Response) {
+  const character = await getCharacterForUser(req.userId!);
   if (!character) {
     res.status(404).json({ error: "Персонаж не найден" });
     return null;
@@ -46,8 +46,8 @@ gameRouter.get("/static", (_req, res) => {
   res.json({ backstories, subjects, clubs, pets, spellTemplates, lectureTopics, maxYear: MAX_YEAR });
 });
 
-gameRouter.get("/character", (req: AuthedRequest, res) => {
-  const character = getCharacterForUser(req.userId!);
+gameRouter.get("/character", async (req: AuthedRequest, res) => {
+  const character = await getCharacterForUser(req.userId!);
   if (!character) return res.json({ character: null });
   res.json({ character: serializeCharacter(character) });
 });
@@ -57,15 +57,15 @@ const createSchema = z.object({
   backstoryId: z.string(),
 });
 
-gameRouter.post("/character", (req: AuthedRequest, res) => {
-  const existing = getCharacterForUser(req.userId!);
+gameRouter.post("/character", async (req: AuthedRequest, res) => {
+  const existing = await getCharacterForUser(req.userId!);
   if (existing && existing.status === "active") {
     return res.status(409).json({ error: "У тебя уже есть активный персонаж" });
   }
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Некорректные данные" });
   try {
-    const character = createCharacter(req.userId!, parsed.data.name, parsed.data.backstoryId);
+    const character = await createCharacter(req.userId!, parsed.data.name, parsed.data.backstoryId);
     res.json({ character: serializeCharacter(character) });
   } catch (e) {
     res.status(400).json({ error: (e as Error).message });
@@ -80,23 +80,23 @@ const sortingSchema = z.object({
   answers: z.array(z.object({ questionId: z.string(), optionId: z.string() })),
 });
 
-gameRouter.post("/sorting/submit", (req: AuthedRequest, res) => {
-  const character = ownedCharacterOr404(req, res);
+gameRouter.post("/sorting/submit", async (req: AuthedRequest, res) => {
+  const character = await ownedCharacterOr404(req, res);
   if (!character) return;
   const parsed = sortingSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Некорректные данные" });
   try {
-    const result = submitSorting(character.id, parsed.data.answers);
-    res.json({ ...result, character: serializeCharacter(getCharacterById(character.id)!) });
+    const result = await submitSorting(character.id, parsed.data.answers);
+    res.json({ ...result, character: serializeCharacter((await getCharacterById(character.id))!) });
   } catch (e) {
     res.status(400).json({ error: (e as Error).message });
   }
 });
 
-gameRouter.get("/event/current", (req: AuthedRequest, res) => {
-  const character = ownedCharacterOr404(req, res);
+gameRouter.get("/event/current", async (req: AuthedRequest, res) => {
+  const character = await ownedCharacterOr404(req, res);
   if (!character) return;
-  const event = getCurrentEvent(character.id);
+  const event = await getCurrentEvent(character.id);
   res.json({ event });
 });
 
@@ -106,13 +106,13 @@ const resolveSchema = z.object({
   challengeSuccess: z.boolean().optional(),
 });
 
-gameRouter.post("/event/resolve", (req: AuthedRequest, res) => {
-  const character = ownedCharacterOr404(req, res);
+gameRouter.post("/event/resolve", async (req: AuthedRequest, res) => {
+  const character = await ownedCharacterOr404(req, res);
   if (!character) return;
   const parsed = resolveSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Некорректные данные" });
   try {
-    const result = resolveEventChoice(character.id, parsed.data.eventId, parsed.data.choiceId, {
+    const result = await resolveEventChoice(character.id, parsed.data.eventId, parsed.data.choiceId, {
       challengeSuccess: parsed.data.challengeSuccess,
     });
     res.json(result);
@@ -121,32 +121,32 @@ gameRouter.post("/event/resolve", (req: AuthedRequest, res) => {
   }
 });
 
-gameRouter.post("/week/advance", (req: AuthedRequest, res) => {
-  const character = ownedCharacterOr404(req, res);
+gameRouter.post("/week/advance", async (req: AuthedRequest, res) => {
+  const character = await ownedCharacterOr404(req, res);
   if (!character) return;
-  const updated = advanceWeek(character.id);
+  const updated = await advanceWeek(character.id);
   res.json({ character: serializeCharacter(updated) });
 });
 
 const clubSchema = z.object({ clubId: z.string() });
 
-gameRouter.post("/clubs/leave", (req: AuthedRequest, res) => {
-  const character = ownedCharacterOr404(req, res);
+gameRouter.post("/clubs/leave", async (req: AuthedRequest, res) => {
+  const character = await ownedCharacterOr404(req, res);
   if (!character) return;
   const parsed = clubSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Некорректные данные" });
-  res.json({ character: leaveClub(character.id, parsed.data.clubId) });
+  res.json({ character: await leaveClub(character.id, parsed.data.clubId) });
 });
 
 const quidditchPositionSchema = z.object({ position: z.enum(QUIDDITCH_POSITIONS) });
 
-gameRouter.post("/clubs/quidditch-position", (req: AuthedRequest, res) => {
-  const character = ownedCharacterOr404(req, res);
+gameRouter.post("/clubs/quidditch-position", async (req: AuthedRequest, res) => {
+  const character = await ownedCharacterOr404(req, res);
   if (!character) return;
   const parsed = quidditchPositionSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Некорректные данные" });
   try {
-    res.json({ character: setQuidditchPosition(character.id, parsed.data.position) });
+    res.json({ character: await setQuidditchPosition(character.id, parsed.data.position) });
   } catch (e) {
     res.status(400).json({ error: (e as Error).message });
   }
@@ -154,20 +154,20 @@ gameRouter.post("/clubs/quidditch-position", (req: AuthedRequest, res) => {
 
 const petSchema = z.object({ petId: z.string() });
 
-gameRouter.post("/pets/buy", (req: AuthedRequest, res) => {
-  const character = ownedCharacterOr404(req, res);
+gameRouter.post("/pets/buy", async (req: AuthedRequest, res) => {
+  const character = await ownedCharacterOr404(req, res);
   if (!character) return;
   const parsed = petSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Некорректные данные" });
   try {
-    res.json({ character: buyPet(character.id, parsed.data.petId) });
+    res.json({ character: await buyPet(character.id, parsed.data.petId) });
   } catch (e) {
     res.status(400).json({ error: (e as Error).message });
   }
 });
 
-gameRouter.get("/exam/questions", (req: AuthedRequest, res) => {
-  const character = ownedCharacterOr404(req, res);
+gameRouter.get("/exam/questions", async (req: AuthedRequest, res) => {
+  const character = await ownedCharacterOr404(req, res);
   if (!character) return;
   const questions = getExamQuestions().map(({ correctIndex: _correctIndex, ...rest }) => rest);
   res.json({ questions });
@@ -177,30 +177,30 @@ const examSchema = z.object({
   answers: z.array(z.object({ questionId: z.string(), optionIndex: z.number() })),
 });
 
-gameRouter.post("/exam/submit", (req: AuthedRequest, res) => {
-  const character = ownedCharacterOr404(req, res);
+gameRouter.post("/exam/submit", async (req: AuthedRequest, res) => {
+  const character = await ownedCharacterOr404(req, res);
   if (!character) return;
   const parsed = examSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Некорректные данные" });
   try {
-    const results = submitExamAnswers(character.id, parsed.data.answers);
-    res.json({ results, character: serializeCharacter(getCharacterById(character.id)!) });
+    const results = await submitExamAnswers(character.id, parsed.data.answers);
+    res.json({ results, character: serializeCharacter((await getCharacterById(character.id))!) });
   } catch (e) {
     res.status(400).json({ error: (e as Error).message });
   }
 });
 
-gameRouter.get("/exam/results", (req: AuthedRequest, res) => {
-  const character = ownedCharacterOr404(req, res);
+gameRouter.get("/exam/results", async (req: AuthedRequest, res) => {
+  const character = await ownedCharacterOr404(req, res);
   if (!character) return;
-  res.json({ results: getExamResults(character.id) });
+  res.json({ results: await getExamResults(character.id) });
 });
 
-gameRouter.post("/year/advance", (req: AuthedRequest, res) => {
-  const character = ownedCharacterOr404(req, res);
+gameRouter.post("/year/advance", async (req: AuthedRequest, res) => {
+  const character = await ownedCharacterOr404(req, res);
   if (!character) return;
   try {
-    res.json({ character: advanceYear(character.id) });
+    res.json({ character: await advanceYear(character.id) });
   } catch (e) {
     res.status(400).json({ error: (e as Error).message });
   }
@@ -208,10 +208,10 @@ gameRouter.post("/year/advance", (req: AuthedRequest, res) => {
 
 const studySchema = z.object({ topicId: z.string() });
 
-gameRouter.post("/study", (req: AuthedRequest, res) => {
-  const character = ownedCharacterOr404(req, res);
+gameRouter.post("/study", async (req: AuthedRequest, res) => {
+  const character = await ownedCharacterOr404(req, res);
   if (!character) return;
   const parsed = studySchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Некорректные данные" });
-  res.json({ studiedTopics: studyTopic(character.id, parsed.data.topicId) });
+  res.json({ studiedTopics: await studyTopic(character.id, parsed.data.topicId) });
 });
