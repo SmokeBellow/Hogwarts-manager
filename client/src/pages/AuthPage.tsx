@@ -5,7 +5,7 @@ import { useAuth } from "../AuthContext";
 export function AuthPage() {
   const { login } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -15,7 +15,7 @@ export function AuthPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = mode === "login" ? await api.login(email, password) : await api.register(email, password);
+      const res = mode === "login" ? await api.login(username, password) : await api.register(username, password);
       login(res.token);
     } catch (err) {
       setError((err as Error).message);
@@ -33,11 +33,12 @@ export function AuthPage() {
         </p>
         <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 20 }}>
           <input
-            type="email"
+            type="text"
             required
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Никнейм"
+            autoComplete="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
           <input
             type="password"

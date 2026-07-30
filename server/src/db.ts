@@ -15,7 +15,7 @@ db.pragma("foreign_keys = ON");
 db.exec(`
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  email TEXT UNIQUE NOT NULL,
+  username TEXT UNIQUE NOT NULL COLLATE NOCASE,
   password_hash TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -69,6 +69,31 @@ CREATE TABLE IF NOT EXISTS exam_results (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 `);
+
+// Migration from the old email-based login to nickname-based login. The old
+// `users` table had `email TEXT UNIQUE NOT NULL`; SQLite can't drop a NOT NULL
+// constraint via ALTER, so the table is rebuilt with the new shape instead.
+try {
+  const columns = db.prepare(`PRAGMA table_info(users)`).all() as { name: string }[];
+  const hasEmail = columns.some((c) => c.name === "email");
+  const hasUsername = columns.some((c) => c.name === "username");
+  if (hasEmail) {
+    db.exec(`
+      CREATE TABLE users_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL COLLATE NOCASE,
+        password_hash TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      INSERT INTO users_new (id, username, password_hash, created_at)
+        SELECT id, ${hasUsername ? "COALESCE(username, email)" : "email"}, password_hash, created_at FROM users;
+      DROP TABLE users;
+      ALTER TABLE users_new RENAME TO users;
+    `);
+  }
+} catch {
+  // best-effort migration; fine to skip on fresh databases
+}
 
 // Migrations for databases created before these columns existed.
 try {

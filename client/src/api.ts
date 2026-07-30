@@ -29,10 +29,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  register: (email: string, password: string) =>
-    request<{ token: string }>("/auth/register", { method: "POST", body: JSON.stringify({ email, password }) }),
-  login: (email: string, password: string) =>
-    request<{ token: string }>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
+  register: (username: string, password: string) =>
+    request<{ token: string }>("/auth/register", { method: "POST", body: JSON.stringify({ username, password }) }),
+  login: (username: string, password: string) =>
+    request<{ token: string }>("/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }),
   getStatic: () => request<any>("/game/static"),
   getCharacter: () => request<{ character: any }>("/game/character"),
   createCharacter: (name: string, backstoryId: string) =>
